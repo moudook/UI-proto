@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
-import { Send, X, MessageSquare, Bot, User } from 'lucide-react';
+import { Send, X, MessageSquare, Bot, User, Sparkles } from 'lucide-react';
 
 interface ChatInterfaceProps {
   onClose: () => void;
@@ -14,7 +13,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
   const chatRef = useRef<Chat | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Chat
   useEffect(() => {
     if (!process.env.API_KEY) return;
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -41,11 +39,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      // Use sendMessageStream for real-time feel
       const result = await chatRef.current.sendMessageStream({ message: userMsg });
       
       let fullResponse = '';
-      setMessages(prev => [...prev, { role: 'model', text: '' }]); // Placeholder for streaming
+      setMessages(prev => [...prev, { role: 'model', text: '' }]); 
 
       for await (const chunk of result) {
         const c = chunk as GenerateContentResponse;
@@ -67,43 +64,47 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[500px] h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in z-40 font-sans">
-       {/* Header */}
-       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex justify-between items-center text-white shadow-md">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-white/20 rounded-lg">
-                <Bot size={20} className="text-white" />
+    <div className="fixed bottom-28 left-1/2 -translate-x-1/2 w-[480px] h-[650px] bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-300 z-40 font-sans ring-1 ring-black/5 border border-white/50">
+       
+       {/* Glass Header */}
+       <div className="absolute top-0 w-full h-20 bg-white/80 backdrop-blur-md border-b border-gray-100/50 flex justify-between items-center px-6 z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                <Sparkles size={20} className="text-white fill-current" />
             </div>
             <div>
-                <h3 className="font-bold text-sm leading-tight">Analyst AI</h3>
-                <p className="text-[10px] text-indigo-100 opacity-80">Online • Gemini 2.5 Flash</p>
+                <h3 className="font-bold text-gray-900 leading-tight text-base">Analyst AI</h3>
+                <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    <p className="text-xs text-gray-500 font-medium">Gemini 2.5 Flash</p>
+                </div>
             </div>
           </div>
-          <button onClick={onClose} className="hover:bg-white/20 p-1.5 rounded-full transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:text-gray-900 hover:bg-gray-100 flex items-center justify-center transition-all">
             <X size={18} />
           </button>
        </div>
 
        {/* Messages Area */}
-       <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50/50">
+       <div className="flex-1 overflow-y-auto p-6 pt-24 space-y-6 bg-gradient-to-b from-white to-gray-50/50">
           {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-60">
-              <div className="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mb-4">
-                <MessageSquare size={32} />
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-40 select-none">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                <MessageSquare size={32} className="text-gray-400" />
               </div>
-              <p className="text-gray-500 font-medium">Start a conversation about your deal flow or ask for a summary.</p>
+              <p className="text-gray-500 font-medium text-sm max-w-[200px]">Ask about deal flow, market trends, or meeting summaries.</p>
             </div>
           )}
           
           {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`flex-none w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-purple-100 text-purple-600'}`}>
+            <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div className={`flex-none w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${msg.role === 'user' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-100 text-indigo-600'}`}>
                 {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
               </div>
-              <div className={`max-w-[80%] p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+              <div className={`max-w-[80%] p-4 rounded-2xl text-[14px] leading-relaxed shadow-sm ${
                 msg.role === 'user' 
-                  ? 'bg-indigo-600 text-white rounded-tr-none' 
-                  : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
+                  ? 'bg-gray-900 text-white rounded-tr-sm' 
+                  : 'bg-white border border-gray-100 text-gray-700 rounded-tl-sm'
               }`}>
                 {msg.text}
               </div>
@@ -111,14 +112,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
           ))}
 
           {isLoading && (
-             <div className="flex gap-3">
-               <div className="flex-none w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+             <div className="flex gap-4">
+               <div className="flex-none w-8 h-8 rounded-full bg-white border border-gray-100 text-indigo-600 flex items-center justify-center shadow-sm">
                     <Bot size={14} />
                </div>
-               <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5 h-10">
-                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
-                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-75"></span>
-                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-150"></span>
+               <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
+                 <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></span>
+                 <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce delay-75"></span>
+                 <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce delay-150"></span>
                </div>
              </div>
           )}
@@ -126,23 +127,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
        </div>
 
        {/* Input Area */}
-       <div className="p-4 bg-white border-t border-gray-100">
-          <div className="flex gap-2 items-center bg-gray-50 border border-gray-200 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all shadow-sm">
+       <div className="p-4 bg-white/80 backdrop-blur-md border-t border-gray-100/50">
+          <div className="relative">
             <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask your analyst..."
-                className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-gray-800 placeholder-gray-400"
+                placeholder="Message..."
+                className="w-full pl-5 pr-12 py-4 bg-gray-50 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-200 focus:ring-4 focus:ring-indigo-50/50 rounded-2xl text-sm text-gray-800 placeholder-gray-400 transition-all outline-none"
                 disabled={isLoading}
             />
             <button 
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-0 disabled:scale-75 transition-all shadow-md shadow-indigo-200 active:scale-95"
             >
-                <Send size={16} />
+                <Send size={16} className="ml-0.5" />
             </button>
           </div>
        </div>

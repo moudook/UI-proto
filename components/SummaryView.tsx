@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, AlertCircle, X, FileDiff, Save, Edit3 } from 'lucide-react';
+import { ArrowLeft, AlertCircle, X, FileDiff, Save, Edit3, MoreVertical } from 'lucide-react';
 import { SummaryBlock } from '../types';
 
 interface SummaryViewProps {
@@ -59,48 +59,48 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
   const diff = computeDiff(oldText, newText);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh]">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="flex items-center gap-2 text-indigo-900">
-            <FileDiff className="w-6 h-6" />
-            <h3 className="text-xl font-bold">Version Comparison</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] border border-white/50 ring-1 ring-black/5">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100/50">
+          <div className="flex items-center gap-2 text-gray-800">
+            <FileDiff className="w-5 h-5 text-indigo-500" />
+            <h3 className="text-xl font-bold tracking-tight">Version Comparison</h3>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={24} />
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/5 text-gray-400 hover:text-gray-700 transition-colors">
+            <X size={20} />
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto leading-relaxed text-gray-700">
+        <div className="p-8 overflow-y-auto leading-relaxed text-gray-600 font-sans">
           <p className="text-lg">
             {diff.map((token, idx) => {
               if (token.type === 'added') {
                 return (
-                  <span key={idx} className="bg-green-100 text-green-800 px-1 rounded mx-0.5 font-medium border border-green-200">
+                  <span key={idx} className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md mx-0.5 font-medium">
                     {token.value}
                   </span>
                 );
               }
               if (token.type === 'removed') {
                 return (
-                  <span key={idx} className="bg-red-100 text-red-800 px-1 rounded mx-0.5 line-through decoration-red-400 opacity-80 text-sm">
+                  <span key={idx} className="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded-md mx-0.5 line-through decoration-rose-400 opacity-60 text-base">
                     {token.value}
                   </span>
                 );
               }
-              return <span key={idx} className="text-gray-600"> {token.value} </span>;
+              return <span key={idx} className="text-gray-500"> {token.value} </span>;
             })}
           </p>
         </div>
 
-        <div className="p-4 bg-gray-50 border-t border-gray-100 rounded-b-xl flex justify-end gap-4 text-sm">
+        <div className="p-4 bg-gray-50/50 border-t border-gray-100/50 rounded-b-3xl flex justify-end gap-6 text-sm">
             <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-red-100 border border-red-200 rounded"></span>
-                <span className="text-gray-600">Removed</span>
+                <span className="w-2 h-2 bg-rose-400 rounded-full"></span>
+                <span className="text-gray-500 font-medium">Removed</span>
             </div>
             <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-100 border border-green-200 rounded"></span>
-                <span className="text-gray-600">Added</span>
+                <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                <span className="text-gray-500 font-medium">Added</span>
             </div>
         </div>
       </div>
@@ -131,39 +131,40 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          flex flex-col p-6 rounded-xl border bg-white shadow-sm transition-all duration-300 ease-in-out
-          relative overflow-hidden
-          ${isHovered ? 'shadow-xl scale-[1.02] border-indigo-300 z-10' : 'hover:shadow-md border-indigo-100'}
-          ${isEditing ? 'ring-2 ring-indigo-400' : ''}
+          flex flex-col p-8 rounded-[2rem] bg-white transition-all duration-300 ease-out
+          relative overflow-hidden group border border-gray-100
+          ${isHovered ? 'shadow-soft-lg -translate-y-1 z-10' : 'shadow-sm'}
+          ${isEditing ? 'ring-2 ring-indigo-500/20' : ''}
         `}
-        style={{ minHeight: '260px' }}
+        style={{ minHeight: '300px' }}
       >
-        {/* Unsaved Changes Indicator (Red Blink) */}
+        {/* Unsaved Changes Indicator */}
         {isDirty && (
-          <span className="absolute top-3 right-3 flex h-3 w-3 z-20">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-          </span>
+          <div className="absolute top-6 right-6 flex h-3 w-3 z-20" title="Unsaved changes">
+             <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></div>
+             <div className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></div>
+          </div>
+        )}
+        
+        {/* History Indicator (visible on hover) */}
+        {!isDirty && hasHistory && isHovered && !isEditing && (
+            <button 
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDiff(true);
+                }}
+                className="absolute top-5 right-5 p-2 bg-orange-50 text-orange-600 rounded-full hover:bg-orange-100 transition-colors z-20"
+                title="View History"
+            >
+                <AlertCircle size={18} />
+            </button>
         )}
 
-        <div className="flex justify-between items-start mb-3 border-b border-indigo-50 pb-2">
-            <h2 className="text-xl font-handwriting font-semibold text-indigo-700 select-none">
+        <div className="flex justify-between items-start mb-6">
+            <h2 className="text-lg font-bold text-gray-900 tracking-tight">
                 {item.title}
             </h2>
-            
-            {/* Alert Button: Only visible if hovered AND changed in history */}
-            {hasHistory && isHovered && !isEditing && (
-                <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setShowDiff(true);
-                    }}
-                    className="flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold transition-colors animate-in zoom-in duration-200 z-20"
-                >
-                    <AlertCircle size={14} />
-                    View Changes
-                </button>
-            )}
+            <MoreVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
         <div 
@@ -176,25 +177,27 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
                 value={item.content}
                 onChange={(e) => onUpdate(item.id, e.target.value)}
                 onBlur={() => setIsEditing(false)}
-                className="w-full h-full min-h-[160px] resize-none focus:outline-none bg-transparent font-handwriting text-gray-800 leading-relaxed p-0 placeholder-gray-300"
-                placeholder="Click to add summary notes..."
+                className="w-full h-full min-h-[200px] resize-none focus:outline-none bg-transparent text-gray-700 leading-relaxed p-0 placeholder-gray-300 text-base"
+                placeholder="Type your observations here..."
               />
             ) : (
               <div className="h-full">
                 {item.content ? (
-                  <p className={`text-gray-600 leading-relaxed font-handwriting whitespace-pre-wrap ${!isHovered ? 'line-clamp-6' : ''}`}>
+                  <p className={`text-gray-600 text-base leading-relaxed whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
                     {item.content}
                   </p>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-300 italic select-none">
-                    Click to add content...
-                    <Edit3 size={16} className="ml-2 opacity-0 group-hover/content:opacity-50 transition-opacity" />
+                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 select-none py-10">
+                    <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
+                        <Edit3 size={20} className="opacity-50" />
+                    </div>
+                    <span className="text-sm font-medium">Empty section</span>
                   </div>
                 )}
                 
-                {/* Fade effect for truncated text */}
+                {/* Fade effect */}
                 {!isHovered && item.content && (
-                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none" />
                 )}
               </div>
             )}
@@ -213,10 +216,8 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
 };
 
 export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onBack, onSave, searchQuery = '' }) => {
-  // Local state for drafts (edits in progress)
   const [drafts, setDrafts] = useState<SummaryBlock[]>(data);
 
-  // Sync drafts if external data changes (e.g. initial load)
   useEffect(() => {
     setDrafts(data);
   }, [data]);
@@ -242,58 +243,64 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
   );
 
   return (
-    <div className="flex flex-col h-full bg-white p-8 overflow-auto">
+    <div className="flex flex-col h-full bg-gray-50/30 overflow-auto pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 flex-none">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="text-gray-500 group-hover:text-indigo-600" size={24} />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-indigo-900 tracking-tight">{startupName}</h1>
-            <p className="text-sm text-gray-400 font-medium">Investment Summaries</p>
-          </div>
-        </div>
+      <div className="px-10 py-8 flex-none bg-white/50 backdrop-blur-sm sticky top-0 z-40 border-b border-gray-100">
+          <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
+            <div className="flex items-center gap-6">
+            <button 
+                onClick={onBack}
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-100 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all group"
+                aria-label="Go back"
+            >
+                <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{startupName}</h1>
+                <p className="text-sm text-gray-500 font-medium">Deal Memo & Analysis</p>
+            </div>
+            </div>
 
-        {/* Global Save Button */}
-        <button
-          onClick={handleManualSave}
-          disabled={!hasUnsavedChanges}
-          className={`
-            flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold shadow-sm transition-all duration-200
-            ${hasUnsavedChanges 
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200' 
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
-          `}
-        >
-          <Save size={18} />
-          {hasUnsavedChanges ? 'Save Changes' : 'All Saved'}
-        </button>
+            <button
+            onClick={handleManualSave}
+            disabled={!hasUnsavedChanges}
+            className={`
+                flex items-center gap-2 px-6 py-3 rounded-xl font-semibold shadow-sm transition-all duration-300
+                ${hasUnsavedChanges 
+                ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg transform hover:-translate-y-0.5' 
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
+            `}
+            >
+            <Save size={18} />
+            {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+            </button>
+         </div>
       </div>
 
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl pb-10">
-        {filteredSummaries.length > 0 ? (
-          filteredSummaries.map((item) => {
-            const original = data.find(d => d.id === item.id) || item;
-            return (
-              <EditableSummaryCard 
-                key={item.id} 
-                item={item} 
-                originalItem={original}
-                onUpdate={handleUpdateContent}
-              />
-            );
-          })
-        ) : (
-          <div className="col-span-full text-center py-10 text-gray-400">
-            No summaries found matching "{searchQuery}"
-          </div>
-        )}
+      <div className="flex-1 p-10 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredSummaries.length > 0 ? (
+                filteredSummaries.map((item) => {
+                    const original = data.find(d => d.id === item.id) || item;
+                    return (
+                    <EditableSummaryCard 
+                        key={item.id} 
+                        item={item} 
+                        originalItem={original}
+                        onUpdate={handleUpdateContent}
+                    />
+                    );
+                })
+                ) : (
+                <div className="col-span-full py-20 text-center">
+                    <div className="text-gray-300 mb-2">No matching sections found</div>
+                    <div className="text-sm text-gray-400">Try adjusting your search</div>
+                </div>
+                )}
+            </div>
+        </div>
       </div>
     </div>
   );
