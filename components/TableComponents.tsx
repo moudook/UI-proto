@@ -203,7 +203,7 @@ export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameCl
                  </div>
               </Cell>
               <Cell className={`${COL.TEXT_XL}`}>
-                 <ExpandableContent content={row.context} widthClass={COL.TEXT_XL} />
+                 <ExpandableContent content={typeof row.context === 'string' ? row.context : JSON.stringify(row.context)} widthClass={COL.TEXT_XL} />
               </Cell>
               <Cell className={`${COL.NUM} text-gray-300 font-mono text-xs`}>{row.applicationId}</Cell>
             </tr>

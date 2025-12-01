@@ -1,3 +1,4 @@
+
 export interface ApplicationData {
   id: string;
   // Core CRM
@@ -28,22 +29,31 @@ export interface ApplicationData {
 
 export interface StartupData {
   // Derived from StartupCreate schema
-  id: string; // convenient frontend key
+  id: string;
   applicationId: string;
   companyName: string;
   dateAccepted: string;
-  context: string;
-  previousContext?: string; // For diff view
+  context: string | Record<string, any>;
+  previousContext?: string; 
+}
+
+export interface TranscriptChunk {
+  speaker: string;
+  text: string;
+  timestamp: string;
 }
 
 export interface MeetingData {
-  // MeetingMiniData
-  id: string;
+  id: string; 
   vc_id: string;
   start_time: string;
   end_time: string | null;
   status: 'in_progress' | 'completed' | 'canceled';
-  relatedSessionId?: string; // Links to the backend AI session/chat history
+  
+  transcript: TranscriptChunk[]; 
+  chat_history: TranscriptChunk[]; 
+  summary?: string;
+  vc_notes?: string;
 }
 
 export interface SummaryBlock {
@@ -55,8 +65,8 @@ export interface SummaryBlock {
 
 export interface DiffItem {
   id: string;
-  field: keyof ApplicationData | 'context'; // Field being changed
-  fieldName: string; // Display name
+  field: keyof ApplicationData | 'context';
+  fieldName: string;
   oldValue: string;
   newValue: string;
   status: 'pending' | 'accepted' | 'rejected';

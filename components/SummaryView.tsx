@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, AlertCircle, X, FileDiff, Save, Edit3, MoreVertical, Clock } from 'lucide-react';
+import { Save, Edit3, Clock, X } from 'lucide-react';
 import { SummaryBlock } from '../types';
 
 interface SummaryViewProps {
-  startupName: string;
+  title: string;
+  subtitle?: string;
   data: SummaryBlock[]; // The saved data
   onBack: () => void;
   onSave: (newData: SummaryBlock[]) => void;
@@ -129,6 +130,9 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
   
   // Check if current draft is different from saved version (Dirty)
   const isDirty = item.content !== originalItem.content;
+  
+  // Active state is defined as hovered or being edited
+  const isActive = isHovered || isEditing;
 
   return (
     <>
@@ -136,16 +140,15 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          flex flex-col p-8 rounded-[2rem] bg-white transition-all duration-300 ease-out
-          relative overflow-hidden group border
-          ${isHovered ? 'shadow-card-hover border-gray-100 -translate-y-1' : 'shadow-card border-transparent'}
-          ${isEditing ? 'ring-1 ring-indigo-500/20 shadow-soft-lg' : ''}
+          flex flex-col p-6 rounded-2xl bg-white transition-all duration-300 ease-out
+          relative overflow-hidden group
+          ${isActive ? 'border border-gray-300 shadow-sm' : 'border border-transparent shadow-none'}
         `}
-        style={{ minHeight: '300px' }}
+        style={{ minHeight: '260px' }}
       >
         {/* Unsaved Changes Indicator */}
         {isDirty && (
-          <div className="absolute top-8 right-8 flex h-2 w-2 z-20" title="Unsaved changes">
+          <div className="absolute top-4 right-4 flex h-2 w-2 z-20" title="Unsaved changes">
              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
           </div>
@@ -158,21 +161,16 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                     e.stopPropagation();
                     setShowDiff(true);
                 }}
-                className="absolute top-6 right-6 p-2 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 transition-colors z-20"
+                className="absolute top-3 right-3 p-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 transition-colors z-20"
                 title="View History"
             >
-                <Clock size={16} />
+                <Clock size={14} />
             </button>
         )}
 
-        <div className="flex justify-between items-start mb-6">
-            <h2 className="text-base font-bold text-gray-900 tracking-tight uppercase">
-                {item.title}
-            </h2>
-        </div>
-
+        {/* Content Section - Now at the top */}
         <div 
-          className="flex-1 relative cursor-text group/content"
+          className="flex-1 relative cursor-text group/content mb-4"
           onClick={() => setIsEditing(true)}
         >
             {isEditing ? (
@@ -181,28 +179,34 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                 value={item.content}
                 onChange={(e) => onUpdate(item.id, e.target.value)}
                 onBlur={() => setIsEditing(false)}
-                className="w-full h-full min-h-[200px] resize-none focus:outline-none bg-transparent text-gray-700 leading-7 p-0 placeholder-gray-300 text-sm font-medium"
+                className="w-full h-full resize-none focus:outline-none bg-transparent text-gray-700 leading-6 p-0 placeholder-gray-300 text-sm font-medium"
                 placeholder="Click to add notes..."
               />
             ) : (
               <div className="h-full">
                 {item.content ? (
-                  <p className={`text-gray-600 text-sm leading-7 whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
+                  <p className={`text-gray-600 text-sm leading-6 whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
                     {item.content}
                   </p>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 select-none py-10 opacity-60">
-                    <Edit3 size={24} className="opacity-20" />
+                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-2 select-none py-6 opacity-40">
                     <span className="text-xs font-medium">Empty section</span>
                   </div>
                 )}
                 
                 {/* Fade effect */}
-                {!isHovered && item.content && (
-                    <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                {!isActive && item.content && (
+                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
                 )}
               </div>
             )}
+        </div>
+
+        {/* Title Section - Now at the bottom */}
+        <div className="flex justify-between items-end pt-4 border-t border-gray-50 mt-auto">
+            <h2 className="text-xs font-bold text-gray-900 tracking-wider uppercase">
+                {item.title}
+            </h2>
         </div>
       </div>
 
@@ -217,7 +221,14 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
   );
 };
 
-export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onBack, onSave, searchQuery = '' }) => {
+export const SummaryView: React.FC<SummaryViewProps> = ({ 
+  title, 
+  subtitle = "Due Diligence Notebook", 
+  data, 
+  onBack, 
+  onSave, 
+  searchQuery = '' 
+}) => {
   const [drafts, setDrafts] = useState<SummaryBlock[]>(data);
 
   useEffect(() => {
@@ -247,42 +258,34 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] overflow-auto pb-20">
       {/* Header */}
-      <div className="px-12 py-6 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
-          <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
-            <div className="flex items-center gap-6">
-            <button 
-                onClick={onBack}
-                className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-card hover:shadow-card-hover border border-transparent text-gray-400 hover:text-gray-900 transition-all group"
-                aria-label="Go back"
-            >
-                <ArrowLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
-            </button>
+      <div className="px-8 py-5 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
+          <div className="flex items-center justify-between w-full">
+            {/* Title Only - Back button removed */}
             <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">{startupName}</h1>
-                <p className="text-xs text-gray-400 font-medium mt-0.5 uppercase tracking-wide">Due Diligence Notebook</p>
-            </div>
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">{title}</h1>
+                <p className="text-[10px] text-gray-400 font-bold mt-0.5 uppercase tracking-wide">{subtitle}</p>
             </div>
 
             <button
             onClick={handleManualSave}
             disabled={!hasUnsavedChanges}
             className={`
-                flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm transition-all duration-300
+                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-300
                 ${hasUnsavedChanges 
                 ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg transform hover:-translate-y-0.5' 
                 : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}
             `}
             >
-            <Save size={16} />
+            <Save size={14} />
             {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
             </button>
          </div>
       </div>
 
-      {/* Grid Layout */}
-      <div className="flex-1 p-12 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Grid Layout - Adaptive Columns */}
+      <div className="flex-1 p-8 overflow-y-auto">
+        <div className="w-full">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
                 {filteredSummaries.length > 0 ? (
                 filteredSummaries.map((item) => {
                     const original = data.find(d => d.id === item.id) || item;
@@ -296,12 +299,12 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
                     );
                 })
                 ) : (
-                <div className="col-span-full py-32 text-center">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                        <Edit3 size={24} />
+                <div className="col-span-full py-20 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                        <Edit3 size={20} />
                     </div>
-                    <div className="text-gray-900 font-medium mb-1">No notes found</div>
-                    <div className="text-sm text-gray-400">Try adjusting your search filters</div>
+                    <div className="text-gray-900 font-medium mb-1 text-sm">No notes found</div>
+                    <div className="text-xs text-gray-400">Try adjusting your search filters</div>
                 </div>
                 )}
             </div>

@@ -1,7 +1,5 @@
 {
-  "name": "InvestFlow Dashboard",
-  "description": "A startup investment tracking dashboard with dynamic tables and AI integration.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "name": "UI Prototype",
+  "description": "A Pathway enabaled application",
+  "requestFramePermissions": []
 }
