@@ -48,12 +48,12 @@ export const MEETINGS: MeetingData[] = Array.from({ length: 5 }).map((_, i) => (
 }));
 
 export const DEFAULT_SUMMARY_SECTIONS = [
-  "Executive Summary",
-  "Market Analysis",
-  "Financial Projections",
-  "Competitive Landscape",
-  "Team Structure",
-  "Risk Factors"
+  "Financial Due Diligence",
+  "Customer Due Diligence",
+  "Tech Due Diligence",
+  "Legal Due Diligence",
+  "Founders Notes",
+  "Company Notes"
 ];
 
 export const generateEmptySummaries = (startupName: string): SummaryBlock[] => {

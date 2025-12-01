@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, AlertCircle, X, FileDiff, Save, Edit3, MoreVertical } from 'lucide-react';
+import { ArrowLeft, AlertCircle, X, FileDiff, Save, Edit3, MoreVertical, Clock } from 'lucide-react';
 import { SummaryBlock } from '../types';
 
 interface SummaryViewProps {
@@ -59,31 +59,36 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
   const diff = computeDiff(oldText, newText);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] border border-white/50 ring-1 ring-black/5">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100/50">
-          <div className="flex items-center gap-2 text-gray-800">
-            <FileDiff className="w-5 h-5 text-indigo-500" />
-            <h3 className="text-xl font-bold tracking-tight">Version Comparison</h3>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] ring-1 ring-black/5">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center gap-3 text-gray-900">
+            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                <Clock className="w-5 h-5" />
+            </div>
+            <div>
+                <h3 className="text-lg font-bold tracking-tight">Version History</h3>
+                <p className="text-xs text-gray-500 font-medium">Comparing previous saved state</p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/5 text-gray-400 hover:text-gray-700 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
             <X size={20} />
           </button>
         </div>
         
-        <div className="p-8 overflow-y-auto leading-relaxed text-gray-600 font-sans">
-          <p className="text-lg">
+        <div className="p-8 overflow-y-auto leading-relaxed text-gray-600 font-sans text-sm">
+          <p>
             {diff.map((token, idx) => {
               if (token.type === 'added') {
                 return (
-                  <span key={idx} className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md mx-0.5 font-medium">
+                  <span key={idx} className="bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded mx-0.5 font-medium border border-emerald-200/50">
                     {token.value}
                   </span>
                 );
               }
               if (token.type === 'removed') {
                 return (
-                  <span key={idx} className="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded-md mx-0.5 line-through decoration-rose-400 opacity-60 text-base">
+                  <span key={idx} className="bg-rose-50 text-rose-400 px-1 py-0.5 rounded mx-0.5 line-through decoration-rose-300 opacity-70">
                     {token.value}
                   </span>
                 );
@@ -93,7 +98,7 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
           </p>
         </div>
 
-        <div className="p-4 bg-gray-50/50 border-t border-gray-100/50 rounded-b-3xl flex justify-end gap-6 text-sm">
+        <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-[2rem] flex justify-end gap-6 text-xs">
             <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-rose-400 rounded-full"></span>
                 <span className="text-gray-500 font-medium">Removed</span>
@@ -114,7 +119,7 @@ interface EditableCardProps {
   onUpdate: (id: string, newContent: string) => void;
 }
 
-const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps) => {
+const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, onUpdate }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -132,17 +137,17 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
         onMouseLeave={() => setIsHovered(false)}
         className={`
           flex flex-col p-8 rounded-[2rem] bg-white transition-all duration-300 ease-out
-          relative overflow-hidden group border border-gray-100
-          ${isHovered ? 'shadow-soft-lg -translate-y-1 z-10' : 'shadow-sm'}
-          ${isEditing ? 'ring-2 ring-indigo-500/20' : ''}
+          relative overflow-hidden group border
+          ${isHovered ? 'shadow-card-hover border-gray-100 -translate-y-1' : 'shadow-card border-transparent'}
+          ${isEditing ? 'ring-1 ring-indigo-500/20 shadow-soft-lg' : ''}
         `}
         style={{ minHeight: '300px' }}
       >
         {/* Unsaved Changes Indicator */}
         {isDirty && (
-          <div className="absolute top-6 right-6 flex h-3 w-3 z-20" title="Unsaved changes">
-             <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></div>
-             <div className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></div>
+          <div className="absolute top-8 right-8 flex h-2 w-2 z-20" title="Unsaved changes">
+             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+             <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
           </div>
         )}
         
@@ -153,18 +158,17 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
                     e.stopPropagation();
                     setShowDiff(true);
                 }}
-                className="absolute top-5 right-5 p-2 bg-orange-50 text-orange-600 rounded-full hover:bg-orange-100 transition-colors z-20"
+                className="absolute top-6 right-6 p-2 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 transition-colors z-20"
                 title="View History"
             >
-                <AlertCircle size={18} />
+                <Clock size={16} />
             </button>
         )}
 
         <div className="flex justify-between items-start mb-6">
-            <h2 className="text-lg font-bold text-gray-900 tracking-tight">
+            <h2 className="text-base font-bold text-gray-900 tracking-tight uppercase">
                 {item.title}
             </h2>
-            <MoreVertical size={16} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
         <div 
@@ -177,21 +181,19 @@ const EditableSummaryCard = ({ item, originalItem, onUpdate }: EditableCardProps
                 value={item.content}
                 onChange={(e) => onUpdate(item.id, e.target.value)}
                 onBlur={() => setIsEditing(false)}
-                className="w-full h-full min-h-[200px] resize-none focus:outline-none bg-transparent text-gray-700 leading-relaxed p-0 placeholder-gray-300 text-base"
-                placeholder="Type your observations here..."
+                className="w-full h-full min-h-[200px] resize-none focus:outline-none bg-transparent text-gray-700 leading-7 p-0 placeholder-gray-300 text-sm font-medium"
+                placeholder="Click to add notes..."
               />
             ) : (
               <div className="h-full">
                 {item.content ? (
-                  <p className={`text-gray-600 text-base leading-relaxed whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
+                  <p className={`text-gray-600 text-sm leading-7 whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
                     {item.content}
                   </p>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 select-none py-10">
-                    <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
-                        <Edit3 size={20} className="opacity-50" />
-                    </div>
-                    <span className="text-sm font-medium">Empty section</span>
+                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 select-none py-10 opacity-60">
+                    <Edit3 size={24} className="opacity-20" />
+                    <span className="text-xs font-medium">Empty section</span>
                   </div>
                 )}
                 
@@ -243,21 +245,21 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
   );
 
   return (
-    <div className="flex flex-col h-full bg-gray-50/30 overflow-auto pb-20">
+    <div className="flex flex-col h-full bg-[#F8F9FA] overflow-auto pb-20">
       {/* Header */}
-      <div className="px-10 py-8 flex-none bg-white/50 backdrop-blur-sm sticky top-0 z-40 border-b border-gray-100">
+      <div className="px-12 py-6 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
           <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
             <div className="flex items-center gap-6">
             <button 
                 onClick={onBack}
-                className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-100 text-gray-400 hover:text-indigo-600 hover:border-indigo-100 transition-all group"
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-card hover:shadow-card-hover border border-transparent text-gray-400 hover:text-gray-900 transition-all group"
                 aria-label="Go back"
             >
-                <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <div>
-                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{startupName}</h1>
-                <p className="text-sm text-gray-500 font-medium">Deal Memo & Analysis</p>
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">{startupName}</h1>
+                <p className="text-xs text-gray-400 font-medium mt-0.5 uppercase tracking-wide">Due Diligence Notebook</p>
             </div>
             </div>
 
@@ -265,20 +267,20 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
             onClick={handleManualSave}
             disabled={!hasUnsavedChanges}
             className={`
-                flex items-center gap-2 px-6 py-3 rounded-xl font-semibold shadow-sm transition-all duration-300
+                flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold shadow-sm transition-all duration-300
                 ${hasUnsavedChanges 
                 ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg transform hover:-translate-y-0.5' 
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
+                : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}
             `}
             >
-            <Save size={18} />
+            <Save size={16} />
             {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
             </button>
          </div>
       </div>
 
       {/* Grid Layout */}
-      <div className="flex-1 p-10 overflow-y-auto">
+      <div className="flex-1 p-12 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredSummaries.length > 0 ? (
@@ -294,9 +296,12 @@ export const SummaryView: React.FC<SummaryViewProps> = ({ startupName, data, onB
                     );
                 })
                 ) : (
-                <div className="col-span-full py-20 text-center">
-                    <div className="text-gray-300 mb-2">No matching sections found</div>
-                    <div className="text-sm text-gray-400">Try adjusting your search</div>
+                <div className="col-span-full py-32 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                        <Edit3 size={24} />
+                    </div>
+                    <div className="text-gray-900 font-medium mb-1">No notes found</div>
+                    <div className="text-sm text-gray-400">Try adjusting your search filters</div>
                 </div>
                 )}
             </div>

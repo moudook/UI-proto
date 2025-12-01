@@ -43,6 +43,7 @@ export interface MeetingData {
   start_time: string;
   end_time: string | null;
   status: 'in_progress' | 'completed' | 'canceled';
+  relatedSessionId?: string; // Links to the backend AI session/chat history
 }
 
 export interface SummaryBlock {
@@ -50,6 +51,15 @@ export interface SummaryBlock {
   title: string;
   content: string;
   previousContent?: string;
+}
+
+export interface DiffItem {
+  id: string;
+  field: keyof ApplicationData | 'context'; // Field being changed
+  fieldName: string; // Display name
+  oldValue: string;
+  newValue: string;
+  status: 'pending' | 'accepted' | 'rejected';
 }
 
 export enum Tab {

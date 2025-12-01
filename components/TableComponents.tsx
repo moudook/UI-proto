@@ -1,137 +1,44 @@
 import React, { useState } from 'react';
 import { ApplicationData, StartupData, MeetingData } from '../types';
-import { ChevronDown, AlertCircle, FileDiff, X, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, AlertCircle, MoreHorizontal, ArrowRight, Building2, MapPin, Calendar } from 'lucide-react';
 
-// --- Shared Diff Logic ---
-type DiffToken = { type: 'same' | 'added' | 'removed'; value: string };
-
-function computeDiff(oldText: string, newText: string): DiffToken[] {
-  const a = oldText.split(/\s+/);
-  const b = newText.split(/\s+/);
-  const m = a.length;
-  const n = b.length;
-  
-  const C = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) {
-        C[i][j] = C[i - 1][j - 1] + 1;
-      } else {
-        C[i][j] = Math.max(C[i][j - 1], C[i - 1][j]);
-      }
-    }
-  }
-
-  let i = m;
-  let j = n;
-  const result: DiffToken[] = [];
-
-  while (i > 0 && j > 0) {
-    if (a[i - 1] === b[j - 1]) {
-      result.unshift({ type: 'same', value: a[i - 1] });
-      i--; j--;
-    } else if (C[i - 1][j] > C[i][j - 1]) {
-      result.unshift({ type: 'removed', value: a[i - 1] });
-      i--;
-    } else {
-      result.unshift({ type: 'added', value: b[j - 1] });
-      j--;
-    }
-  }
-  while (i > 0) { result.unshift({ type: 'removed', value: a[i - 1] }); i--; }
-  while (j > 0) { result.unshift({ type: 'added', value: b[j - 1] }); j--; }
-
-  return result;
-}
-
-const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: string, onClose: () => void }) => {
-  const diff = computeDiff(oldText, newText);
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/20 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] border border-white/50">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="flex items-center gap-3 text-gray-900">
-            <div className="p-2 bg-indigo-50 rounded-xl">
-              <FileDiff className="w-5 h-5 text-indigo-600" />
-            </div>
-            <h3 className="text-lg font-bold">Version Comparison</h3>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="p-8 overflow-y-auto leading-relaxed text-gray-600">
-          <p className="text-base">
-            {diff.map((token, idx) => {
-              if (token.type === 'added') {
-                return (
-                  <span key={idx} className="bg-emerald-100/60 text-emerald-700 px-1.5 py-0.5 rounded-md mx-0.5 font-medium border border-emerald-200/50">
-                    {token.value}
-                  </span>
-                );
-              }
-              if (token.type === 'removed') {
-                return (
-                  <span key={idx} className="bg-rose-100/60 text-rose-700 px-1.5 py-0.5 rounded-md mx-0.5 line-through decoration-rose-400/50 opacity-70 text-sm">
-                    {token.value}
-                  </span>
-                );
-              }
-              return <span key={idx} className="text-gray-600"> {token.value} </span>;
-            })}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+// --- Constants for Column Widths ---
+const COL = {
+  ID: "w-[70px] min-w-[70px]",
+  COMPANY: "w-[240px] min-w-[240px]",
+  TEXT_SM: "w-[140px] min-w-[140px]",
+  TEXT_MD: "w-[180px] min-w-[180px]",
+  TEXT_LG: "w-[300px] min-w-[300px]",
+  TEXT_XL: "w-[400px] min-w-[400px]",
+  DATE: "w-[160px] min-w-[160px]",
+  STATUS: "w-[150px] min-w-[150px]",
+  NUM: "w-[120px] min-w-[120px]",
+  ACTION: "w-[50px] min-w-[50px]"
 };
 
-// --- Expandable Cell Component ---
-const ExpandableContent = ({ content, previousContent, widthClass = "w-[260px]" }: { content: string, previousContent?: string, widthClass?: string }) => {
-  const [showDiff, setShowDiff] = useState(false);
-  const hasChanged = previousContent && previousContent.trim() !== content.trim();
-
+// --- Expandable Cell Component (Simple Hover) ---
+const ExpandableContent = ({ content, widthClass = COL.TEXT_LG }: { content: string, widthClass?: string }) => {
   return (
-    <>
-      <div className={`group relative ${widthClass} transition-all duration-300 ease-in-out`}>
-        <div className="truncate group-hover:whitespace-normal group-hover:overflow-visible group-hover:bg-white group-hover:shadow-xl group-hover:z-50 group-hover:absolute group-hover:left-0 group-hover:-top-2 group-hover:p-4 group-hover:rounded-xl group-hover:border group-hover:border-gray-100 text-sm text-gray-600 leading-relaxed cursor-default">
-          {content}
-          
-          {hasChanged && (
-             <div className="hidden group-hover:flex justify-start mt-3 pt-3 border-t border-gray-100">
-               <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowDiff(true);
-                  }}
-                  className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-orange-200/50 w-full justify-center"
-                >
-                  <AlertCircle size={14} />
-                  See Changes
-                </button>
-            </div>
-          )}
-        </div>
+    <div className={`group relative ${widthClass}`}>
+      {/* Default / Collapsed View */}
+      <div className="truncate text-sm text-gray-500 leading-relaxed cursor-default w-full">
+        {content}
       </div>
 
-      {showDiff && previousContent && (
-        <DiffModal 
-          oldText={previousContent}
-          newText={content}
-          onClose={() => setShowDiff(false)}
-        />
-      )}
-    </>
+      {/* Hover / Expanded View */}
+      <div className="hidden group-hover:block absolute left-0 -top-2 z-50 bg-white p-5 rounded-xl shadow-card-hover border border-gray-100/50 animate-in fade-in zoom-in-95 duration-200 w-full min-w-[320px] max-w-[400px]">
+          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+            {content}
+          </div>
+      </div>
+    </div>
   );
 };
 
 // --- Table Helper Components ---
 
 const HeaderCell = ({ children, className = '', width = '' }: { children?: React.ReactNode, className?: string, width?: string }) => (
-  <th className={`px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-white border-b border-gray-100 align-middle ${className} ${width}`}>
+  <th className={`px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white/95 backdrop-blur border-b border-gray-100 align-middle ${className} ${width}`}>
     <div className="flex items-center gap-1.5 cursor-pointer group whitespace-nowrap hover:text-gray-600 transition-colors">
       {children}
     </div>
@@ -139,7 +46,7 @@ const HeaderCell = ({ children, className = '', width = '' }: { children?: React
 );
 
 const Cell = ({ children, className = '', ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-  <td className={`px-5 py-4 text-sm text-gray-600 border-b border-gray-50 bg-white align-top transition-colors group-hover/row:bg-gray-50/50 ${className}`} {...props}>
+  <td className={`px-6 py-4 text-sm text-gray-600 border-b border-gray-50 bg-white align-middle transition-colors group-hover/row:bg-gray-50/40 ${className}`} {...props}>
     {children}
   </td>
 );
@@ -152,98 +59,99 @@ interface TableProps<T> {
 
 // --- Application Table ---
 export const ApplicationTable: React.FC<TableProps<ApplicationData>> = ({ data, onNameClick, onStatusChange }) => {
-  const W_ID = "80px";
-  const W_COMPANY = "180px"; 
-  
   return (
     <div className="w-full h-full overflow-auto pb-20">
       <table className="min-w-max border-separate border-spacing-0">
-        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100">
+        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100/50">
           <tr>
-            <th className={`sticky left-0 z-30 bg-white px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 w-[${W_ID}] min-w-[${W_ID}]`}>
-              ID
+            <th className={`sticky left-0 z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${COL.ID}`}>
+              #
             </th>
-            <th className={`sticky left-[${W_ID}] z-30 bg-white px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 w-[${W_COMPANY}] min-w-[${W_COMPANY}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)]`}>
+            <th className={`sticky left-[70px] z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
               Company
             </th>
             
-            <HeaderCell width="min-w-[140px]">Industry</HeaderCell>
-            <HeaderCell width="min-w-[150px]">Location</HeaderCell>
-            <HeaderCell width="min-w-[140px]">Founder</HeaderCell>
-            <HeaderCell width="min-w-[100px]">Round</HeaderCell>
-            <HeaderCell width="min-w-[110px]">Amount</HeaderCell>
-            <HeaderCell width="min-w-[110px]">Valuation</HeaderCell>
-            <HeaderCell width="min-w-[120px]">Stage</HeaderCell>
-            <HeaderCell width="min-w-[280px]">Description</HeaderCell>
-            <HeaderCell width="min-w-[280px]">Key Insight</HeaderCell>
-            <HeaderCell width="min-w-[140px]">Status</HeaderCell>
-            <HeaderCell width="min-w-[50px]"></HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Industry</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Location</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Founder</HeaderCell>
+            <HeaderCell width={COL.NUM}>Round</HeaderCell>
+            <HeaderCell width={COL.NUM}>Amount</HeaderCell>
+            <HeaderCell width={COL.NUM}>Valuation</HeaderCell>
+            <HeaderCell width={COL.STATUS}>Stage</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Description</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Key Insight</HeaderCell>
+            <HeaderCell width={COL.STATUS}>Status</HeaderCell>
+            <HeaderCell width={COL.ACTION}></HeaderCell>
           </tr>
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/50">
+            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/40">
               {/* Sticky ID */}
-              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/50 px-5 py-4 text-xs font-mono text-gray-400 border-b border-gray-50 w-[${W_ID}] min-w-[${W_ID}] align-top`}>
-                <span className="opacity-70">#</span>{row.id.split('-')[1]}
+              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 text-xs font-medium text-gray-300 border-b border-gray-50 ${COL.ID}`}>
+                {row.id.split('-')[1]}
               </td>
               {/* Sticky Company Name */}
-              <td className={`sticky left-[${W_ID}] z-10 bg-white group-hover/row:bg-gray-50/50 px-5 py-4 text-sm font-semibold text-gray-900 border-b border-gray-50 w-[${W_COMPANY}] min-w-[${W_COMPANY}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] align-top`}>
+              <td className={`sticky left-[70px] z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 text-sm font-semibold text-gray-900 border-b border-gray-50 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
                 <button 
                   onClick={() => onNameClick(row.companyName)}
-                  className="w-full text-left group hover:text-indigo-600 transition-colors block"
+                  className="w-full text-left flex items-center gap-3 group/btn"
                 >
-                  <span className="truncate w-full block">{row.companyName}</span>
+                   <div className="w-8 h-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center border border-gray-100 group-hover/btn:bg-white group-hover/btn:border-indigo-100 group-hover/btn:text-indigo-500 transition-colors">
+                      <Building2 size={14} />
+                   </div>
+                  <span className="truncate group-hover/btn:text-indigo-600 transition-colors">{row.companyName}</span>
                 </button>
               </td>
               
-              <Cell className="min-w-[140px] font-medium">{row.industry}</Cell>
-              <Cell className="min-w-[150px] text-gray-500">{row.location}</Cell>
-              <Cell className="min-w-[140px]">
+              <Cell className={`${COL.TEXT_MD} font-medium`}>{row.industry}</Cell>
+              <Cell className={`${COL.TEXT_MD} text-gray-500`}>
+                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <MapPin size={12} />
+                    {row.location.split(',')[0]}
+                 </div>
+              </Cell>
+              <Cell className={COL.TEXT_MD}>
                 <div className="flex items-center gap-2">
-                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 text-[10px] flex items-center justify-center font-bold text-gray-500">
+                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 border border-gray-100 text-[10px] flex items-center justify-center font-bold text-indigo-400">
                       {row.founderName.charAt(0)}
                    </div>
-                   {row.founderName}
+                   <span className="text-gray-700">{row.founderName}</span>
                 </div>
               </Cell>
-              <Cell className="min-w-[100px]"><span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">{row.roundType}</span></Cell>
-              <Cell className="min-w-[110px] font-mono text-xs">{row.amountRaising}</Cell>
-              <Cell className="min-w-[110px] font-mono text-xs text-gray-400">{row.valuation}</Cell>
-              <Cell className="min-w-[120px]"><span className="text-xs text-indigo-600 font-medium bg-indigo-50 px-2.5 py-1 rounded-full">{row.stage}</span></Cell>
+              <Cell className={COL.NUM}><span className="bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">{row.roundType}</span></Cell>
+              <Cell className={`${COL.NUM} font-mono text-xs font-medium text-gray-700`}>{row.amountRaising}</Cell>
+              <Cell className={`${COL.NUM} font-mono text-xs text-gray-400`}>{row.valuation}</Cell>
+              <Cell className={COL.STATUS}><span className="text-[11px] font-semibold text-indigo-600 tracking-wide uppercase">{row.stage}</span></Cell>
               
-              <Cell className="min-w-[280px] p-0">
-                  <div className="px-5 py-4"><ExpandableContent content={row.description} widthClass="w-[260px]"/></div>
+              <Cell className={`${COL.TEXT_LG}`}>
+                  <ExpandableContent content={row.description} widthClass={COL.TEXT_LG}/>
               </Cell>
               
-              <Cell className="min-w-[280px] p-0">
-                <div className="px-5 py-4"><ExpandableContent content={row.keyInsight} previousContent={row.previousKeyInsight} widthClass="w-[260px]" /></div>
+              <Cell className={`${COL.TEXT_LG}`}>
+                <ExpandableContent content={row.keyInsight} widthClass={COL.TEXT_LG} />
               </Cell>
 
-              <Cell className="min-w-[140px]">
+              <Cell className={COL.STATUS}>
                 <div className="relative">
                     <select 
                     value={row.status}
                     onChange={(e) => onStatusChange && onStatusChange(row.id, e.target.value)}
-                    className={`appearance-none pl-3 pr-8 py-1.5 text-xs font-bold rounded-full border-0 cursor-pointer focus:ring-2 focus:ring-offset-2 transition-all w-full ${
-                        row.status === 'accepted' ? 'text-emerald-700 bg-emerald-100 focus:ring-emerald-200' : 
-                        row.status === 'rejected' ? 'text-rose-700 bg-rose-100 focus:ring-rose-200' : 
-                        'text-amber-700 bg-amber-100 focus:ring-amber-200'
+                    className={`appearance-none pl-3 pr-8 py-1.5 text-xs font-bold rounded-lg border-0 cursor-pointer focus:ring-0 transition-all w-full ${
+                        row.status === 'accepted' ? 'text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/50' : 
+                        row.status === 'rejected' ? 'text-rose-700 bg-rose-50/50 hover:bg-rose-100/50' : 
+                        'text-amber-700 bg-amber-50/50 hover:bg-amber-100/50'
                     }`}
                     >
                     <option value="pending">Pending</option>
                     <option value="accepted">Accepted</option>
                     <option value="rejected">Rejected</option>
                     </select>
-                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none ${
-                        row.status === 'accepted' ? 'text-emerald-700' : 
-                        row.status === 'rejected' ? 'text-rose-700' : 
-                        'text-amber-700'
-                    }`} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none opacity-50`} />
                 </div>
               </Cell>
-              <Cell className="min-w-[50px] text-right">
-                  <button className="text-gray-300 hover:text-gray-600"><MoreHorizontal size={16} /></button>
+              <Cell className={`${COL.ACTION} text-right`}>
+                  <button className="text-gray-300 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-md transition-colors"><MoreHorizontal size={16} /></button>
               </Cell>
             </tr>
           ))}
@@ -255,44 +163,49 @@ export const ApplicationTable: React.FC<TableProps<ApplicationData>> = ({ data, 
 
 // --- Startup Table ---
 export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameClick }) => {
-  const W_ID = "80px";
-  const W_COMPANY = "180px";
-
   return (
     <div className="w-full h-full overflow-auto pb-20">
       <table className="min-w-max border-separate border-spacing-0">
-        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100">
+        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100/50">
           <tr>
-            <th className={`sticky left-0 z-30 bg-white px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 w-[${W_ID}] min-w-[${W_ID}]`}>
-              ID
+            <th className={`sticky left-0 z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${COL.ID}`}>
+              #
             </th>
-            <th className={`sticky left-[${W_ID}] z-30 bg-white px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 w-[${W_COMPANY}] min-w-[${W_COMPANY}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)]`}>
+            <th className={`sticky left-[70px] z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
               Company
             </th>
-            <HeaderCell width="min-w-[140px]">Date Accepted</HeaderCell>
-            <HeaderCell width="min-w-[400px]">Context</HeaderCell>
-            <HeaderCell width="min-w-[120px]">App ID</HeaderCell>
+            <HeaderCell width={COL.DATE}>Date Accepted</HeaderCell>
+            <HeaderCell width={COL.TEXT_XL}>Context</HeaderCell>
+            <HeaderCell width={COL.NUM}>App ID</HeaderCell>
           </tr>
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/50">
-              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/50 px-5 py-4 text-xs text-gray-400 font-mono border-b border-gray-50 w-[${W_ID}] align-top`}>
-                <span className="opacity-70">#</span>{row.id.split('-')[1]}
+            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/40">
+              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 text-xs text-gray-300 font-medium border-b border-gray-50 ${COL.ID}`}>
+                {row.id.split('-')[1]}
               </td>
-              <td className={`sticky left-[${W_ID}] z-10 bg-white group-hover/row:bg-gray-50/50 px-5 py-4 text-sm font-semibold text-gray-900 border-b border-gray-50 w-[${W_COMPANY}] min-w-[${W_COMPANY}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] align-top`}>
+              <td className={`sticky left-[70px] z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 text-sm font-semibold text-gray-900 border-b border-gray-50 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
                 <button 
                   onClick={() => onNameClick(row.companyName)}
-                  className="hover:text-indigo-600 transition-colors text-left w-full block"
+                  className="hover:text-indigo-600 transition-colors text-left w-full flex items-center gap-3"
                 >
-                  <span className="truncate w-full block">{row.companyName}</span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100/50">
+                      <Building2 size={14} />
+                   </div>
+                  <span className="truncate">{row.companyName}</span>
                 </button>
               </td>
-              <Cell className="min-w-[140px] text-gray-500">{new Date(row.dateAccepted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Cell>
-              <Cell className="min-w-[400px] p-0">
-                 <div className="px-5 py-4"><ExpandableContent content={row.context} previousContent={row.previousContext} widthClass="w-[380px]" /></div>
+              <Cell className={`${COL.DATE} text-gray-500`}>
+                 <div className="flex items-center gap-2 text-xs">
+                    <Calendar size={12} className="text-gray-400"/>
+                    {new Date(row.dateAccepted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                 </div>
               </Cell>
-              <Cell className="min-w-[120px] text-gray-300 font-mono text-xs">{row.applicationId}</Cell>
+              <Cell className={`${COL.TEXT_XL}`}>
+                 <ExpandableContent content={row.context} widthClass={COL.TEXT_XL} />
+              </Cell>
+              <Cell className={`${COL.NUM} text-gray-300 font-mono text-xs`}>{row.applicationId}</Cell>
             </tr>
           ))}
         </tbody>
@@ -303,37 +216,39 @@ export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameCl
 
 // --- Meeting Table ---
 export const MeetingTable: React.FC<TableProps<MeetingData>> = ({ data }) => {
-  const W_ID = "180px";
+  // Override ID width for Meetings as UUIDs are longer
+  const MEET_ID_WIDTH = "w-[200px] min-w-[200px]";
 
   return (
     <div className="w-full h-full overflow-auto pb-20">
       <table className="min-w-max border-separate border-spacing-0">
-        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100">
+        <thead className="bg-white sticky top-0 z-20 shadow-sm shadow-gray-100/50">
           <tr>
-            <th className={`sticky left-0 z-30 bg-white px-5 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 w-[${W_ID}] min-w-[${W_ID}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)]`}>
+            <th className={`sticky left-0 z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${MEET_ID_WIDTH} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
               Meeting ID
             </th>
-            <HeaderCell width="min-w-[140px]">VC Lead</HeaderCell>
-            <HeaderCell width="min-w-[200px]">Start Time</HeaderCell>
-            <HeaderCell width="min-w-[200px]">End Time</HeaderCell>
-            <HeaderCell width="min-w-[160px]">Status</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>VC Lead</HeaderCell>
+            <HeaderCell width={COL.DATE}>Start Time</HeaderCell>
+            <HeaderCell width={COL.DATE}>End Time</HeaderCell>
+            <HeaderCell width={COL.STATUS}>Status</HeaderCell>
           </tr>
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/50">
-              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/50 px-5 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-b border-gray-50 w-[${W_ID}] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] align-top`}>
+            <tr key={row.id} className="group/row transition-all hover:bg-gray-50/40">
+              <td className={`sticky left-0 z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 whitespace-nowrap text-xs font-mono text-gray-500 border-b border-gray-50 ${MEET_ID_WIDTH} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
                 {row.id}
               </td>
-              <Cell className="min-w-[140px] font-mono text-xs text-gray-500">{row.vc_id}</Cell>
-              <Cell className="min-w-[200px] text-xs text-gray-500">{new Date(row.start_time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: 'numeric', month: 'short', day: 'numeric' })}</Cell>
-              <Cell className="min-w-[200px] text-xs text-gray-400">{row.end_time ? new Date(row.end_time).toLocaleTimeString() : '-'}</Cell>
-              <Cell className="min-w-[160px]">
-                <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                  row.status === 'in_progress' ? 'bg-indigo-50 text-indigo-600 animate-pulse ring-1 ring-indigo-200' :
-                  row.status === 'completed' ? 'bg-gray-100 text-gray-500' :
-                  'bg-rose-50 text-rose-500'
+              <Cell className={`${COL.TEXT_MD} font-medium text-xs text-gray-600`}>{row.vc_id}</Cell>
+              <Cell className={`${COL.DATE} text-xs text-gray-500`}>{new Date(row.start_time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: 'numeric', month: 'short', day: 'numeric' })}</Cell>
+              <Cell className={`${COL.DATE} text-xs text-gray-400`}>{row.end_time ? new Date(row.end_time).toLocaleTimeString() : '-'}</Cell>
+              <Cell className={COL.STATUS}>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                  row.status === 'in_progress' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/10' :
+                  row.status === 'completed' ? 'bg-gray-50 text-gray-500 border border-gray-100' :
+                  'bg-rose-50 text-rose-500 border border-rose-100'
                 }`}>
+                   {row.status === 'in_progress' && <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-1.5 animate-pulse"></span>}
                   {row.status.replace('_', ' ')}
                 </span>
               </Cell>
