@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Tab, ApplicationData, StartupData, MeetingData } from '../types';
+import { Play } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -59,7 +60,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Sidebar Container */}
       <div 
         ref={sidebarRef} 
-        className="fixed top-0 left-0 h-full z-50 transition-all duration-300 shadow-2xl shadow-gray-200/50"
+        className="fixed top-0 left-0 h-full z-50 shadow-2xl shadow-gray-200/50 transition-[width] duration-300 ease-in-out will-change-[width]"
         style={{ width: isSidebarCollapsed ? '60px' : '260px' }}
       >
         <Sidebar 
@@ -71,11 +72,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       </div>
 
       {/* Layout Spacer */}
-      <div className="flex-none h-full transition-all duration-300 w-[60px]" />
+      <div className="flex-none h-full w-[60px]" />
 
       {/* Backdrop Blur */}
       <div 
-        className={`fixed inset-0 bg-white/40 backdrop-blur-sm z-40 transition-opacity duration-300 ${isSidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`} 
+        className={`fixed inset-0 bg-white/40 backdrop-blur-sm z-40 transition-opacity duration-300 ease-in-out ${isSidebarCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`} 
       />
 
       {/* Main Layout Area */}
@@ -88,11 +89,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         />
 
         <div className="flex-1 px-4 pb-4 pt-0 overflow-hidden relative flex flex-col">
-            <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 h-full flex flex-col relative overflow-hidden transition-all">
+            <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 h-full flex flex-col relative overflow-hidden transition-all duration-500 ease-out">
                 
                 {/* Page Header (Only in Dashboard Mode) */}
                 {viewMode === 'dashboard' && (
-                  <div className="flex-none px-6 py-5 flex items-end justify-between bg-white z-10">
+                  <div className="flex-none px-6 py-5 flex items-end justify-between bg-white z-10 animate-in fade-in slide-in-from-top-2 duration-300">
                       <div>
                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight font-sans">
                             {activeTab === Tab.APPLICATION ? 'Application' : activeTab === Tab.STARTUP ? 'Startup' : 'Meeting'}
@@ -111,6 +112,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
         </div>
       </main>
+
+      {/* Floating Action Button */}
+      <button 
+        className="fixed bottom-8 right-8 z-[60] w-12 h-12 bg-gray-900 hover:bg-black text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center group transition-all duration-300 hover:scale-110 active:scale-90 animate-in zoom-in duration-300"
+        title="Start Recording"
+      >
+        <Play size={20} fill="currentColor" className="ml-0.5" />
+      </button>
     </div>
   );
 };

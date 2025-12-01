@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Save, Edit3, Clock, X } from 'lucide-react';
 import { SummaryBlock } from '../types';
@@ -61,7 +62,7 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] ring-1 ring-black/5">
+      <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] ring-1 ring-black/5 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-3 text-gray-900">
             <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
@@ -140,17 +141,16 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          flex flex-col p-6 rounded-2xl bg-white transition-all duration-300 ease-out
-          relative overflow-hidden group
-          ${isActive ? 'border border-gray-300 shadow-sm' : 'border border-transparent shadow-none'}
+          flex flex-col p-6 rounded-2xl bg-white
+          relative overflow-hidden group transition-all duration-300 ease-out
+          ${isActive ? 'border border-gray-300 shadow-card-hover -translate-y-1' : 'border border-transparent shadow-none'}
         `}
         style={{ minHeight: '260px' }}
       >
         {/* Unsaved Changes Indicator */}
         {isDirty && (
           <div className="absolute top-4 right-4 flex h-2 w-2 z-20" title="Unsaved changes">
-             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-             <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+             <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
           </div>
         )}
         
@@ -161,7 +161,7 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                     e.stopPropagation();
                     setShowDiff(true);
                 }}
-                className="absolute top-3 right-3 p-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 transition-colors z-20"
+                className="absolute top-3 right-3 p-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 z-20 transition-all animate-in fade-in duration-200"
                 title="View History"
             >
                 <Clock size={14} />
@@ -185,7 +185,7 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
             ) : (
               <div className="h-full">
                 {item.content ? (
-                  <p className={`text-gray-600 text-sm leading-6 whitespace-pre-wrap ${!isHovered ? 'line-clamp-[8]' : ''}`}>
+                  <p className={`text-gray-600 text-sm leading-6 whitespace-pre-wrap transition-opacity duration-200 ${!isHovered ? 'line-clamp-[8]' : ''}`}>
                     {item.content}
                   </p>
                 ) : (
@@ -196,7 +196,7 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                 
                 {/* Fade effect */}
                 {!isActive && item.content && (
-                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300" />
                 )}
               </div>
             )}
@@ -256,7 +256,7 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#F8F9FA] overflow-auto pb-20">
+    <div className="flex flex-col h-full bg-[#F8F9FA] overflow-auto pb-20 animate-in fade-in duration-500">
       {/* Header */}
       <div className="px-8 py-5 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
           <div className="flex items-center justify-between w-full">
@@ -270,9 +270,9 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
             onClick={handleManualSave}
             disabled={!hasUnsavedChanges}
             className={`
-                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-300
+                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-200
                 ${hasUnsavedChanges 
-                ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg transform hover:-translate-y-0.5' 
+                ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg active:scale-95' 
                 : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}
             `}
             >
@@ -287,19 +287,20 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
         <div className="w-full">
             <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
                 {filteredSummaries.length > 0 ? (
-                filteredSummaries.map((item) => {
+                filteredSummaries.map((item, idx) => {
                     const original = data.find(d => d.id === item.id) || item;
                     return (
-                    <EditableSummaryCard 
-                        key={item.id} 
-                        item={item} 
-                        originalItem={original}
-                        onUpdate={handleUpdateContent}
-                    />
+                     <div key={item.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-backwards" style={{ animationDelay: `${idx * 50}ms` }}>
+                        <EditableSummaryCard 
+                            item={item} 
+                            originalItem={original}
+                            onUpdate={handleUpdateContent}
+                        />
+                     </div>
                     );
                 })
                 ) : (
-                <div className="col-span-full py-20 text-center">
+                <div className="col-span-full py-20 text-center animate-in fade-in zoom-in-95 duration-300">
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
                         <Edit3 size={20} />
                     </div>

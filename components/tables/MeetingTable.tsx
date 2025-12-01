@@ -37,11 +37,11 @@ export const MeetingTable: React.FC<MeetingTableProps> = ({ data, onNameClick })
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-colors hover:bg-gray-50">
+            <tr key={row.id} className="group/row hover:bg-gray-50">
               <td className={`sticky left-0 z-30 bg-white group-hover/row:bg-gray-50 px-4 py-3 whitespace-nowrap text-xs font-mono border-b border-gray-50 ${MEET_ID_WIDTH} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
                  <button 
                   onClick={() => onNameClick(row.id)}
-                  className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium transition-colors text-left"
+                  className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium text-left"
                 >
                   {row.id}
                 </button>
@@ -55,7 +55,7 @@ export const MeetingTable: React.FC<MeetingTableProps> = ({ data, onNameClick })
                   row.status === 'completed' ? 'bg-gray-50 text-gray-500 border border-gray-100' :
                   'bg-rose-50 text-rose-500 border border-rose-100'
                 }`}>
-                   {row.status === 'in_progress' && <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-1.5 animate-pulse"></span>}
+                   {row.status === 'in_progress' && <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-1.5"></span>}
                   {row.status.replace('_', ' ')}
                 </span>
               </Cell>
