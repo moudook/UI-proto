@@ -65,7 +65,7 @@ ipcMain.on('open-detachable-window', () => {
   });
 
   detachableWindow.loadFile('additional ui elements/detacheble-window.html');
-  detachableWindow.setOpacity(0.5);
+  detachableWindow.setOpacity(1.0);
 
   detachableWindow.on('closed', () => {
     detachableWindow = null;
