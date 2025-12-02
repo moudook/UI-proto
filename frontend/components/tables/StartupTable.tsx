@@ -28,14 +28,14 @@ export const StartupTable: React.FC<StartupTableProps> = ({ data, onNameClick })
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-colors hover:bg-gray-50">
+            <tr key={row.id} className="group/row hover:bg-gray-50">
               <td className={`sticky left-0 z-30 bg-white group-hover/row:bg-gray-50 px-4 py-3 text-xs text-gray-300 font-medium border-b border-gray-50 ${COL.ID}`}>
                 {row.id.split('-')[1]}
               </td>
               <td className={`sticky left-[70px] z-30 bg-white group-hover/row:bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-900 border-b border-gray-50 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
                 <button 
                   onClick={() => onNameClick(row.id, row.companyName)}
-                  className="hover:text-indigo-600 transition-colors text-left w-full flex items-center gap-3"
+                  className="hover:text-indigo-600 text-left w-full flex items-center gap-3"
                 >
                   <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100/50">
                       <Building2 size={12} />

@@ -38,7 +38,7 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
         </thead>
         <tbody className="bg-white">
           {data.map((row) => (
-            <tr key={row.id} className="group/row transition-colors hover:bg-gray-50">
+            <tr key={row.id} className="group/row hover:bg-gray-50">
               {/* Sticky ID */}
               <td className={`sticky left-0 z-30 bg-white group-hover/row:bg-gray-50 px-4 py-3 text-xs font-medium text-gray-300 border-b border-gray-50 ${COL.ID}`}>
                 {row.id.split('-')[1]}
@@ -49,10 +49,10 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
                   onClick={() => onNameClick(row.id, row.companyName)}
                   className="w-full text-left flex items-center gap-3 group/btn"
                 >
-                   <div className="w-7 h-7 rounded-md bg-gray-50 text-gray-400 flex items-center justify-center border border-gray-100 group-hover/btn:bg-white group-hover/btn:border-indigo-100 group-hover/btn:text-indigo-500 transition-colors">
+                   <div className="w-7 h-7 rounded-md bg-gray-50 text-gray-400 flex items-center justify-center border border-gray-100 group-hover/btn:bg-white group-hover/btn:border-indigo-100 group-hover/btn:text-indigo-500">
                       <Building2 size={12} />
                    </div>
-                  <span className="truncate group-hover/btn:text-indigo-600 transition-colors">{row.companyName}</span>
+                  <span className="truncate group-hover/btn:text-indigo-600">{row.companyName}</span>
                 </button>
               </td>
               
@@ -63,7 +63,7 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
                     <select 
                     value={row.status}
                     onChange={(e) => onStatusChange && onStatusChange(row.id, e.target.value)}
-                    className={`appearance-none pl-2.5 pr-6 py-1 text-[11px] font-bold rounded-md border-0 cursor-pointer focus:ring-0 transition-all w-full ${
+                    className={`appearance-none pl-2.5 pr-6 py-1 text-[11px] font-bold rounded-md border-0 cursor-pointer focus:ring-0 w-full ${
                         row.status === 'accepted' ? 'text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/50' : 
                         row.status === 'rejected' ? 'text-rose-700 bg-rose-50/50 hover:bg-rose-100/50' : 
                         'text-amber-700 bg-amber-50/50 hover:bg-amber-100/50'
@@ -105,7 +105,7 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
               </Cell>
 
               <Cell className={`${COL.ACTION} text-right`}>
-                  <button className="text-gray-300 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-md transition-colors"><MoreHorizontal size={14} /></button>
+                  <button className="text-gray-300 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-md"><MoreHorizontal size={14} /></button>
               </Cell>
             </tr>
           ))}
