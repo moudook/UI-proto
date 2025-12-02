@@ -9,6 +9,12 @@ import { DashboardLayout } from './components/DashboardLayout';
 
 export type ViewMode = 'dashboard' | 'summary' | 'review';
 
+/**
+ * Main application component that serves as the dashboard interface.
+ * It manages the state for active tab, view mode, selected records, and search queries.
+ * It orchestrates the display of different tables (applications, startups, meetings) 
+ * and summary views based on the current state.
+ */
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.APPLICATION);
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');

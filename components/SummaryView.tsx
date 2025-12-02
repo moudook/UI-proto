@@ -15,6 +15,12 @@ interface SummaryViewProps {
 // --- Utils: Simple Word Diff (LCS) ---
 type DiffToken = { type: 'same' | 'added' | 'removed'; value: string };
 
+/**
+ * Computes the difference between two texts using the Longest Common Subsequence (LCS) algorithm
+ * @param oldText - The original text to compare
+ * @param newText - The new text to compare
+ * @returns An array of DiffToken objects representing the differences
+ */
 function computeDiff(oldText: string, newText: string): DiffToken[] {
   const a = oldText.split(/\s+/);
   const b = newText.split(/\s+/);
@@ -57,6 +63,12 @@ function computeDiff(oldText: string, newText: string): DiffToken[] {
 
 // --- Components ---
 
+/**
+ * Modal component that displays the differences between two versions of text
+ * @param oldText - The original text to compare
+ * @param newText - The new text to compare
+ * @param onClose - Function to call when the modal is closed
+ */
 const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: string, onClose: () => void }) => {
   const diff = computeDiff(oldText, newText);
 
@@ -121,6 +133,12 @@ interface EditableCardProps {
   onUpdate: (id: string, newContent: string) => void;
 }
 
+/**
+ * Component that renders an editable summary card with history and diff functionality
+ * @param item - The current summary block being displayed
+ * @param originalItem - The original summary block for comparison
+ * @param onUpdate - Function to call when the content is updated
+ */
 const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, onUpdate }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
@@ -221,7 +239,16 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
   );
 };
 
-export const SummaryView: React.FC<SummaryViewProps> = ({ 
+export /**
+ * Component that displays a summary view with editable cards and save functionality
+ * @param title - The title of the summary view
+ * @param subtitle - The subtitle of the summary view (optional)
+ * @param data - The summary blocks to display
+ * @param onBack - Function to call when the back button is clicked
+ * @param onSave - Function to call when the save button is clicked
+ * @param searchQuery - Query to filter the summaries (optional)
+ */
+const SummaryView: React.FC<SummaryViewProps> = ({ 
   title, 
   subtitle = "Due Diligence Notebook", 
   data, 

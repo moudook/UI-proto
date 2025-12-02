@@ -4,6 +4,11 @@ import { ApplicationData, StartupData, MeetingData, SummaryBlock } from '../type
 import { generateEmptySummaries } from '../constants';
 import { api } from '../services/api';
 
+/**
+ * Custom hook that manages the dashboard data state and provides functions to interact with the data
+ * Fetches applications, startups, meetings and summaries from the API
+ * Provides functions to update application status, initialize summaries, and update summaries
+ */
 export const useDashboardData = () => {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [startups, setStartups] = useState<StartupData[]>([]);
@@ -31,6 +36,12 @@ export const useDashboardData = () => {
     loadData();
   }, []);
 
+  /**
+   * Handles the status change of an application and updates the backend accordingly
+   * Performs optimistic UI update and reverts on failure
+   * @param id - The ID of the application to update
+   * @param newStatus - The new status to set for the application
+   */
   const handleApplicationStatusChange = async (id: string, newStatus: 'pending' | 'accepted' | 'rejected') => {
     // 1. Optimistic UI Update
     const previousApps = [...applications];
@@ -59,6 +70,11 @@ export const useDashboardData = () => {
     }
   };
 
+  /**
+   * Initializes summaries for a given record ID and type if they don't already exist
+   * @param id - The ID of the record to initialize summaries for
+   * @param type - The type of record (application or startup)
+   */
   const initSummaries = (id: string, type: 'application' | 'startup') => {
     if (!summaries[id]) {
       setSummaries(prev => ({
@@ -68,6 +84,11 @@ export const useDashboardData = () => {
     }
   };
 
+  /**
+   * Updates summaries with new content and tracks previous content for change tracking
+   * @param id - The ID of the record to update summaries for
+   * @param newBlocks - The new summary blocks to set
+   */
   const updateSummaries = (id: string, newBlocks: SummaryBlock[]) => {
     setSummaries(prev => {
       const currentBlocks = prev[id] || [];
@@ -82,6 +103,12 @@ export const useDashboardData = () => {
     });
   };
 
+  /**
+   * Updates meeting summaries and notes in the backend
+   * Performs optimistic UI update and persists changes to the backend
+   * @param meetingId - The ID of the meeting to update
+   * @param newBlocks - The new summary blocks containing meeting summary and VC notes
+   */
   const updateMeetingSummaries = async (meetingId: string, newBlocks: SummaryBlock[]) => {
     const summaryBlock = newBlocks.find(b => b.title === "Meeting Summary");
     const notesBlock = newBlocks.find(b => b.title === "VC Notes");

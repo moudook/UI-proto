@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
@@ -11,6 +11,8 @@ try {
 }
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+
+let detachableWindow;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -43,6 +45,38 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
+
+ipcMain.on('open-detachable-window', () => {
+  if (detachableWindow) {
+    detachableWindow.focus();
+    return;
+  }
+
+  detachableWindow = new BrowserWindow({
+    width: 500,
+    height: 150,
+    frame: false,
+    transparent: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    }
+  });
+
+  detachableWindow.loadFile('additional ui elements/detacheble-window.html');
+  detachableWindow.setOpacity(0.5);
+
+  detachableWindow.on('closed', () => {
+    detachableWindow = null;
+  });
+});
+
+ipcMain.on('close-detachable-window', () => {
+  if (detachableWindow) {
+    detachableWindow.close();
+  }
+});
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {

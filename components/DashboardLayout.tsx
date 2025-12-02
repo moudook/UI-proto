@@ -55,6 +55,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
+  const handleStartRecording = () => {
+    window.electronAPI?.send('open-detachable-window');
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden font-sans text-gray-800 bg-[#F3F3F2] relative">
       {/* Sidebar Container - Increased widths for larger fonts */}
@@ -115,6 +119,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Floating Action Button */}
       <button 
+        onClick={handleStartRecording}
         className="fixed bottom-10 right-10 z-[60] w-16 h-16 bg-gray-900 hover:bg-black text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center group transition-all duration-300 hover:scale-110 active:scale-90 animate-in zoom-in duration-300"
         title="Start Recording"
       >
