@@ -5,7 +5,11 @@
       "Bash(find:*)",
       "Bash(npx tsc --noEmit)",
       "mcp__ide__getDiagnostics",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run electron:dev:*)",
+      "Bash(move main.js main.cjs)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": []
