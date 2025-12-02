@@ -53,10 +53,13 @@ ipcMain.on('open-detachable-window', () => {
   }
 
   detachableWindow = new BrowserWindow({
-    width: 500,
-    height: 150,
+    width: 520,
+    height: 60,
     frame: false,
     transparent: true,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -75,6 +78,12 @@ ipcMain.on('open-detachable-window', () => {
 ipcMain.on('close-detachable-window', () => {
   if (detachableWindow) {
     detachableWindow.close();
+  }
+});
+
+ipcMain.on('resize-detachable-window', (event, { width, height }) => {
+  if (detachableWindow) {
+    detachableWindow.setSize(width, height, true);
   }
 });
 
