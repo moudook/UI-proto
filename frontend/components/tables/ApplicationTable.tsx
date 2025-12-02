@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ApplicationData } from '../../types';
+import { ApplicationData } from '../../../types';
 import { ChevronDown, MoreHorizontal, Building2, MapPin } from 'lucide-react';
 import { COL, HeaderCell, Cell, ExpandableContent } from './Shared';
 

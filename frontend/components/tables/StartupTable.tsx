@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StartupData } from '../../types';
+import { StartupData } from '../../../types';
 import { Building2, Calendar } from 'lucide-react';
 import { COL, HeaderCell, Cell, ExpandableContent } from './Shared';
 

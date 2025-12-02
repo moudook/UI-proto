@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Meeting Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        /* Panel Animation */
+        .panel-hidden {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+            pointer-events: none;
+            height: 0; 
+        }
+        .panel-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            height: auto;
+        }
+
+        /* Audio Waveform Animation */
+        @keyframes sound {
+            0% { height: 4px; }
+            50% { height: 100%; }
+            100% { height: 4px; }
+        }
+        .bar {
+            width: 3px;
+            background-color: #374151;
+            border-radius: 99px;
+            animation: sound 0ms -800ms linear infinite alternate;
+            height: 4px;
+        }
+        .mic-active .bar { animation-duration: 400ms; }
+        .mic-muted .bar { height: 3px; animation: none; opacity: 0.3; }
+
+        /* Fade in effect */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col items-center justify-start pt-20 overflow-hidden">
+
+    <!-- 1. TOP CONTROL BAR -->
+    <div class="z-50 flex items-center bg-white text-gray-600 rounded-full px-2 py-2 shadow-lg border border-gray-200 select-none gap-2">
+        
+        <!-- Live Audio Visualizer -->
+        <div id="audioVisualizer" class="mic-active flex items-center justify-center gap-1 w-12 h-8 px-2 mr-2">
+            <div class="bar" style="animation-delay: -1.2s;"></div>
+            <div class="bar" style="animation-delay: -2.4s;"></div>
+            <div class="bar" style="animation-delay: -0.5s;"></div>
+            <div class="bar" style="animation-delay: -3.1s;"></div>
+        </div>
+
+        <!-- Mute/Unmute Button -->
+        <button id="micBtn" class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition border border-gray-200">
+            <svg id="iconMicOn" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <svg id="iconMicOff" class="hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="15" y1="9.34" x2="15" y2="4a3 3 0 0 0-5.94-.6"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+
+        <!-- Ask Button -->
+        <button id="askBtn" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-200 transition">
+            <span class="text-sm font-semibold">Ask</span>
+            <div class="flex items-center gap-0.5 bg-white px-1.5 py-0.5 rounded text-xs text-gray-500 font-mono border border-gray-200">
+                <span>⌘</span>
+                <span>K</span>
+            </div>
+        </button>
+
+        <!-- End Meeting Button -->
+        <button onclick="alert('Meeting Ended')" class="flex items-center justify-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-500 text-red-500 hover:text-white transition border border-red-100 ml-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotate-135"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </button>
+    </div>
+
+    <!-- 2. AI CONTENT WINDOW -->
+    <div id="insightPanel" class="panel-hidden z-40 mt-4 w-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 text-gray-800 overflow-hidden flex flex-col transition-all duration-300 origin-top ring-1 ring-black/5">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center px-5 pt-4 pb-2 border-b border-gray-50">
+            <h3 class="text-indigo-600 font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                AI Insights
+            </h3>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <!-- Logic updated to handle single text chunk -->
+        <div id="aiContentContainer" class="px-5 pb-6 pt-4 max-h-[400px] min-h-[100px] overflow-y-auto">
+            <!-- Content/Loading injected here -->
+        </div>
+
+        <!-- Input Footer -->
+        <div class="px-5 py-4 bg-gray-50 border-t border-gray-100">
+             <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 transition">
+                <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-[10px] font-bold">AI</div>
+                <input type="text" placeholder="Ask a follow-up question..." class="bg-transparent outline-none text-sm text-gray-700 w-full placeholder-gray-400">
+                <button class="text-gray-400 hover:text-indigo-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+             </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const askBtn = document.getElementById('askBtn');
+        const insightPanel = document.getElementById('insightPanel');
+        const contentContainer = document.getElementById('aiContentContainer');
+        const micBtn = document.getElementById('micBtn');
+        const iconMicOn = document.getElementById('iconMicOn');
+        const iconMicOff = document.getElementById('iconMicOff');
+        const visualizer = document.getElementById('audioVisualizer');
+
+        // State
+        let isPanelOpen = false;
+        let isMuted = false;
+
+        // --- 1. ASK BUTTON (Trigger) ---
+        askBtn.addEventListener('click', async () => {
+            isPanelOpen = !isPanelOpen;
+            
+            if (isPanelOpen) {
+                // Open Panel
+                insightPanel.classList.remove('panel-hidden');
+                insightPanel.classList.add('panel-visible');
+                
+                // Active Button Style
+                askBtn.classList.remove('bg-gray-100', 'text-gray-900');
+                askBtn.classList.add('bg-indigo-600', 'text-white', 'border-transparent', 'ring-2', 'ring-indigo-200');
+                
+                // Show Skeleton Loading (Single text block style)
+                renderLoadingState();
+
+                // --------------------------------------------------------
+                // TODO: FETCH DATA FROM YOUR BACKEND HERE
+                // --------------------------------------------------------
+                /*
+                try {
+                    const response = await fetch('/api/get-insights');
+                    const text = await response.text(); // or response.json().content
+                    renderAIContent(text); 
+                } catch (error) {
+                    contentContainer.innerHTML = '<p class="text-red-500">Error loading content.</p>';
+                }
+                */
+               // --------------------------------------------------------
+
+               // DEMO: Simulating a response for demonstration (remove this in production)
+               // setTimeout(() => renderAIContent("Based on the current discussion, the team seems aligned on the Q4 goals, but there is ambiguity regarding the budget cap for the marketing initiatives. I suggest asking the lead about the specific dollar amount allocated for November ad spend."), 1500);
+
+            } else {
+                // Close Panel
+                insightPanel.classList.remove('panel-visible');
+                insightPanel.classList.add('panel-hidden');
+
+                // Revert Button Style
+                askBtn.classList.add('bg-gray-100', 'text-gray-900');
+                askBtn.classList.remove('bg-indigo-600', 'text-white', 'border-transparent', 'ring-2', 'ring-indigo-200');
+            }
+        });
+
+        // --- 2. RENDER FUNCTIONS ---
+        
+        // Displays a "paragraph" loading skeleton
+        function renderLoadingState() {
+            contentContainer.innerHTML = `
+                <div class="space-y-3 animate-pulse">
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full"></div>
+                    <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            `;
+        }
+
+        // Renders a single chunk of text
+        function renderAIContent(textChunk) {
+            if (!textChunk) return;
+
+            // Simple text rendering
+            // whitespace-pre-line ensures new lines from the backend are respected
+            contentContainer.innerHTML = `
+                <div class="fade-in">
+                    <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">${textChunk}</p>
+                </div>
+            `;
+        }
+
+
+        // --- 3. MIC TOGGLE LOGIC ---
+        micBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            if (isMuted) {
+                iconMicOn.classList.add('hidden');
+                iconMicOff.classList.remove('hidden');
+                micBtn.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white', 'border-red-600');
+                micBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                visualizer.classList.remove('mic-active');
+                visualizer.classList.add('mic-muted');
+            } else {
+                iconMicOn.classList.remove('hidden');
+                iconMicOff.classList.add('hidden');
+                micBtn.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white', 'border-red-600');
+                micBtn.classList.add('bg-gray-100', 'text-gray-700');
+                visualizer.classList.add('mic-active');
+                visualizer.classList.remove('mic-muted');
+            }
+        });
+    </script>
+</body>
+</html>

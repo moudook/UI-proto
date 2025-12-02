@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SECURITY: Content Security Policy (CSP) -->
+    <!-- This strictly limits what resources the browser can load. 
+         - default-src 'self': Only allow resources from the same origin.
+         - style-src 'unsafe-inline': Allows our CSS block (necessary for single-file).
+         - font-src: Allows Google Fonts.
+         - script-src 'unsafe-inline': Allows our JS block. 
+         In a production environment with separate files, remove 'unsafe-inline' for scripts. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
+
+    <title>Secure Diff Editor</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Golden Ratio & Accessibility Theme */
+            --phi: 1.618;
+            --base-size: 14px;
+            --line-height: 24px;
+            --border-radius: 10px;
+            
+            --bg-app: #F0F4F8;       
+            --bg-card: #FFFFFF;
+            
+            --text-primary: #102A43; 
+            --text-secondary: #627D98; 
+            
+            /* Color Blind Safe Colors */
+            --add-bg: #E6FFFA;       
+            --add-border: #319795;   
+            --add-text: #234E52;     
+            
+            --del-bg: #FFF5F5;       
+            --del-border: #D53F8C; 
+            --del-text: #702459;     
+            
+            --spacer-stripe: repeating-linear-gradient(
+                45deg,
+                #F7F9FC,
+                #F7F9FC 10px,
+                #EDF2F7 10px,
+                #EDF2F7 12px
+            );
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            margin: 0;
+            padding: calc(20px * var(--phi));
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-app);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+
+        .editor-card {
+            background: var(--bg-card);
+            border-radius: calc(var(--border-radius) * var(--phi));
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 1600px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #DAE1E7;
+        }
+
+        .split-view {
+            display: flex;
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .pane {
+            width: 50%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            /* Performance: Hardware acceleration for scrolling */
+            will-change: scroll-position;
+        }
+        
+        .pane.left { border-right: 1px solid #DAE1E7; }
+
+        .pane::-webkit-scrollbar { width: 12px; height: 12px; }
+        .pane::-webkit-scrollbar-track { background: transparent; }
+        .pane::-webkit-scrollbar-thumb { 
+            background: #BCCCDC; 
+            border: 3px solid transparent; 
+            background-clip: padding-box;
+            border-radius: 99px;
+        }
+        .pane::-webkit-scrollbar-thumb:hover { background-color: #829AB1; }
+
+        .code-container {
+            min-height: 100%;
+            outline: none;
+            counter-reset: line; 
+        }
+
+        .diff-row {
+            display: flex;
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--base-size);
+            line-height: var(--line-height);
+            position: relative;
+        }
+
+        .diff-row::before {
+            content: attr(data-line);
+            display: block;
+            width: 65px;
+            min-width: 65px;
+            text-align: right;
+            padding-right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            user-select: none;
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .diff-row.addition { background-color: var(--add-bg); }
+        .diff-row.addition .line-content { color: var(--add-text); font-weight: 500; }
+        .diff-row.addition::before {
+            content: "+ " attr(data-line);
+            color: var(--add-border);
+            font-weight: bold;
+            opacity: 1;
+        }
+        .diff-row.addition .line-content::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background-color: var(--add-border);
+        }
+
+        .diff-row.deletion { background-color: var(--del-bg); }
+        .diff-row.deletion .line-content { color: var(--del-text); }
+        .diff-row.deletion::before {
+            content: "- " attr(data-line);
+            color: var(--del-border);
+            font-weight: bold;
+            opacity: 1;
+        }
+        .diff-row.deletion .line-content::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background-color: var(--del-border);
+        }
+
+        .diff-row.spacer { background: var(--spacer-stripe); }
+        .diff-row.spacer::before { content: ""; }
+
+        .line-content {
+            flex-grow: 1;
+            padding-left: 10px; 
+            padding-right: 20px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--text-primary);
+            position: relative;
+        }
+        
+        /* Security Warning UI */
+        #warning-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #D53F8C;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="editor-card">
+        <div class="split-view">
+            <!-- Left Pane -->
+            <div class="pane left" id="leftPane">
+                <!-- spellcheck="false" improves performance and reduces DOM interference -->
+                <div id="leftContent" class="code-container" contenteditable="true" spellcheck="false"></div>
+            </div>
+
+            <!-- Right Pane -->
+            <div class="pane right" id="rightPane">
+                <div id="rightContent" class="code-container" contenteditable="true" spellcheck="false"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="warning-toast">Input too large: Truncated to 2000 lines for performance.</div>
+
+    <script>
+        // --- Security Configuration ---
+        const MAX_LINES = 2000; // Prevent Browser Crash (DoS Protection)
+        const DEBOUNCE_MS = 50; // Prevent high CPU usage on fast typing
+
+        // --- Initial State ---
+        const initialOriginal = [
+            "function secureTransaction(amount) {",
+            "  if (amount <= 0) {",
+            "    return false;",
+            "  }",
+            "  // Process payment",
+            "  return true;",
+            "}"
+        ];
+
+        const initialNew = [
+            "function secureTransaction(amount, currency) {",
+            "  // Added currency validation logic",
+            "  if (amount <= 0 || !isValid(currency)) {",
+            "    throw new Error('Invalid Input');",
+            "  }",
+            "  processPayment(amount, currency);",
+            "  return true;",
+            "}"
+        ];
+
+        let state = {
+            leftLines: [...initialOriginal],
+            rightLines: [...initialNew]
+        };
+
+        const leftContainer = document.getElementById('leftContent');
+        const rightContainer = document.getElementById('rightContent');
+        const leftPane = document.getElementById('leftPane');
+        const rightPane = document.getElementById('rightPane');
+        const warningToast = document.getElementById('warning-toast');
+
+        // --- Logic: LCS Algorithm (Performance Critical) ---
+        function computeLCS(left, right) {
+            // Guard clause for performance
+            if (left.length > MAX_LINES || right.length > MAX_LINES) return null;
+
+            const m = left.length;
+            const n = right.length;
+            
+            // Performance: Use Int32Array for better memory management on large diffs
+            // (Note: For very large arrays, we would switch to a flat array, 
+            // but standard arrays are fine for < 2000 lines)
+            const C = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    if (left[i - 1] === right[j - 1]) {
+                        C[i][j] = C[i - 1][j - 1] + 1;
+                    } else {
+                        C[i][j] = Math.max(C[i][j - 1], C[i - 1][j]);
+                    }
+                }
+            }
+            return C;
+        }
+
+        function getAlignedRows(left, right) {
+            // Security: limit processing
+            if (left.length > MAX_LINES || right.length > MAX_LINES) {
+                showWarning();
+                return { 
+                    alignedLeft: left.slice(0, MAX_LINES).map((l, i) => ({ type: 'content', line: l, index: i })), 
+                    alignedRight: right.slice(0, MAX_LINES).map((l, i) => ({ type: 'content', line: l, index: i }))
+                };
+            }
+
+            const C = computeLCS(left, right);
+            let i = left.length;
+            let j = right.length;
+            
+            const alignedLeft = [];
+            const alignedRight = [];
+
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && left[i - 1] === right[j - 1]) {
+                    alignedLeft.unshift({ type: 'content', line: left[i - 1], index: i - 1 });
+                    alignedRight.unshift({ type: 'content', line: right[j - 1], index: j - 1 });
+                    i--; j--;
+                } else if (j > 0 && (i === 0 || C[i][j - 1] >= C[i - 1][j])) {
+                    alignedLeft.unshift({ type: 'spacer', line: '', index: -1 });
+                    alignedRight.unshift({ type: 'addition', line: right[j - 1], index: j - 1 });
+                    j--;
+                } else {
+                    alignedLeft.unshift({ type: 'deletion', line: left[i - 1], index: i - 1 });
+                    alignedRight.unshift({ type: 'spacer', line: '', index: -1 });
+                    i--;
+                }
+            }
+            return { alignedLeft, alignedRight };
+        }
+
+        // --- DOM Creation (XSS Protected) ---
+        function createRowHTML(item, side) {
+            const div = document.createElement('div');
+            
+            let classes = ['diff-row'];
+            if (item.type === 'deletion') classes.push('deletion');
+            if (item.type === 'addition') classes.push('addition');
+            if (item.type === 'spacer') classes.push('spacer');
+            div.className = classes.join(' ');
+            
+            if (item.type !== 'spacer') {
+                div.setAttribute('data-line', item.index + 1);
+            } else {
+                div.setAttribute('data-line', '');
+                div.contentEditable = "false";
+            }
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'line-content';
+            
+            // SECURITY: Use textContent NOT innerHTML. 
+            // This prevents XSS if the string contains <script> tags.
+            contentDiv.textContent = item.line;
+            
+            contentDiv.dataset.side = side;
+            
+            if (item.type !== 'spacer') {
+                contentDiv.dataset.index = item.index;
+            }
+            
+            div.appendChild(contentDiv);
+            return div;
+        }
+
+        function render() {
+            const cursor = saveCursor();
+            const { alignedLeft, alignedRight } = getAlignedRows(state.leftLines, state.rightLines);
+
+            // Performance: Using a DocumentFragment reduces reflows
+            const fragmentLeft = document.createDocumentFragment();
+            const fragmentRight = document.createDocumentFragment();
+
+            for (let k = 0; k < alignedLeft.length; k++) {
+                fragmentLeft.appendChild(createRowHTML(alignedLeft[k], 'left'));
+                fragmentRight.appendChild(createRowHTML(alignedRight[k], 'right'));
+            }
+
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+            
+            leftContainer.appendChild(fragmentLeft);
+            rightContainer.appendChild(fragmentRight);
+
+            restoreCursor(cursor);
+        }
+
+        // --- Logic: Debounce (Performance) ---
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        const debouncedRender = debounce(() => {
+            render();
+        }, DEBOUNCE_MS);
+
+        // --- Cursor Handling ---
+        function saveCursor() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return null;
+            const range = sel.getRangeAt(0);
+            
+            let node = range.startContainer;
+            while (node && (!node.classList || !node.classList.contains('line-content'))) {
+                node = node.parentNode;
+                if(!node || node === document.body) break;
+            }
+
+            if (!node || !node.dataset || node.contentEditable === "false") return null;
+
+            return {
+                side: node.dataset.side,
+                index: parseInt(node.dataset.index),
+                offset: sel.getRangeAt(0).startOffset
+            };
+        }
+
+        function restoreCursor(saved) {
+            if (!saved) return;
+            const container = saved.side === 'left' ? leftContainer : rightContainer;
+            const contentDivs = container.querySelectorAll('.line-content');
+            let targetDiv = null;
+            
+            for (let div of contentDivs) {
+                if (parseInt(div.dataset.index) === saved.index) {
+                    targetDiv = div;
+                    break;
+                }
+            }
+
+            if (targetDiv) {
+                targetDiv.focus(); 
+                const sel = window.getSelection();
+                const range = document.createRange();
+                
+                if (targetDiv.firstChild) {
+                    const len = targetDiv.firstChild.length;
+                    range.setStart(targetDiv.firstChild, Math.min(saved.offset, len));
+                    range.setEnd(targetDiv.firstChild, Math.min(saved.offset, len));
+                } else {
+                    range.setStart(targetDiv, 0);
+                    range.setEnd(targetDiv, 0);
+                }
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                container.focus();
+            }
+        }
+
+        function showWarning() {
+            warningToast.style.display = 'block';
+            setTimeout(() => warningToast.style.display = 'none', 3000);
+        }
+
+        // --- Event Listeners ---
+
+        function handleInput(e, side) {
+            // 1. Structural Wipe Recovery (Select All + Delete)
+            const container = side === 'left' ? leftContainer : rightContainer;
+            if (container.querySelectorAll('.diff-row').length === 0 || e.target === container) {
+                const newText = container.innerText; 
+                const newLines = newText.split(/\r?\n/);
+                
+                // Truncate if too long (DoS prevention)
+                if(newLines.length > MAX_LINES) {
+                    newLines.length = MAX_LINES;
+                    showWarning();
+                }
+
+                if (side === 'left') state.leftLines = newLines;
+                else state.rightLines = newLines;
+                
+                render(); 
+                return;
+            }
+
+            // 2. Standard Input (Text update)
+            if (e.target.classList.contains('line-content')) {
+                const index = parseInt(e.target.dataset.index);
+                const lines = side === 'left' ? state.leftLines : state.rightLines;
+                
+                // Using textContent is safe
+                lines[index] = e.target.textContent;
+                
+                // Use debounced render to save CPU
+                debouncedRender();
+            }
+        }
+
+        function handleKeydown(e, side) {
+            const target = e.target;
+            if (!target.classList.contains('line-content')) return;
+
+            const index = parseInt(target.dataset.index);
+            const lines = side === 'left' ? state.leftLines : state.rightLines;
+
+            // ENTER: New Line
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const cursor = window.getSelection().getRangeAt(0).startOffset;
+                const currentLine = lines[index];
+                
+                const part1 = currentLine.slice(0, cursor);
+                const part2 = currentLine.slice(cursor);
+
+                // Prevent creating lines beyond max limit
+                if (lines.length >= MAX_LINES) {
+                    showWarning();
+                    return;
+                }
+
+                lines[index] = part1;
+                lines.splice(index + 1, 0, part2);
+                
+                render(); // Immediate render needed for cursor placement
+                restoreCursor({ side, index: index + 1, offset: 0 });
+            }
+
+            // BACKSPACE: Merge Lines
+            if (e.key === 'Backspace') {
+                const cursor = window.getSelection().getRangeAt(0).startOffset;
+                if (cursor === 0 && index > 0) {
+                    e.preventDefault();
+                    const prevLen = lines[index - 1].length;
+                    lines[index - 1] += lines[index];
+                    lines.splice(index, 1);
+                    render(); // Immediate render needed
+                    restoreCursor({ side, index: index - 1, offset: prevLen });
+                }
+            }
+        }
+
+        // --- Security: Paste Sanitizer ---
+        // Prevents Rich Text / HTML injection via Copy Paste
+        function handlePaste(e, side) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            
+            // Insert text at cursor position manually
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            // Sanitize: We only allow the raw text, browser removes HTML tags due to preventDefault
+            document.execCommand("insertText", false, text);
+            
+            // Trigger input logic
+            handleInput({ target: selection.anchorNode.parentNode }, side);
+        }
+
+        ['input', 'keydown', 'paste'].forEach(evt => {
+            leftContainer.addEventListener(evt, (e) => {
+                if(evt === 'input') handleInput(e, 'left');
+                if(evt === 'keydown') handleKeydown(e, 'left');
+                if(evt === 'paste') handlePaste(e, 'left');
+            });
+            rightContainer.addEventListener(evt, (e) => {
+                if(evt === 'input') handleInput(e, 'right');
+                if(evt === 'keydown') handleKeydown(e, 'right');
+                if(evt === 'paste') handlePaste(e, 'right');
+            });
+        });
+
+        // Sync Scrolling
+        let isSyncingLeft = false, isSyncingRight = false;
+        leftPane.addEventListener('scroll', function() {
+            if (!isSyncingLeft) {
+                isSyncingRight = true;
+                rightPane.scrollTop = this.scrollTop;
+                rightPane.scrollLeft = this.scrollLeft;
+            }
+            isSyncingLeft = false;
+        }, { passive: true }); // Passive listener for scrolling performance
+
+        rightPane.addEventListener('scroll', function() {
+            if (!isSyncingRight) {
+                isSyncingLeft = true;
+                leftPane.scrollTop = this.scrollTop;
+                leftPane.scrollLeft = this.scrollLeft;
+            }
+            isSyncingRight = false;
+        }, { passive: true });
+
+        // Initial Render
+        render();
+
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MeetingData, TranscriptChunk } from '../../types';
+import { MeetingData, TranscriptChunk } from '../../../types';
 import { COL, HeaderCell, Cell, ExpandableContent } from './Shared';
 
 interface MeetingTableProps {

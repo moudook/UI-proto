@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { Tab, ApplicationData, StartupData, MeetingData } from '../types';
+import { Tab, ApplicationData, StartupData, MeetingData } from '../../types';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

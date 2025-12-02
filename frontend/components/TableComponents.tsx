@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ApplicationData, StartupData, MeetingData } from '../types';
+import { ApplicationData, StartupData, MeetingData } from '../../types';
 import { ChevronDown, AlertCircle, MoreHorizontal, ArrowRight, Building2, MapPin, Calendar } from 'lucide-react';
 
 // --- Constants for Column Widths ---

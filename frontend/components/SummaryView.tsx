@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Edit3, Clock, X } from 'lucide-react';
-import { SummaryBlock } from '../types';
+import { SummaryBlock } from '../../types';
 
 interface SummaryViewProps {
   title: string;

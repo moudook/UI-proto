@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Tab, SummaryBlock } from './types';
-import { ApplicationTable } from './components/tables/ApplicationTable';
-import { StartupTable } from './components/tables/StartupTable';
-import { MeetingTable } from './components/tables/MeetingTable';
-import { SummaryView } from './components/SummaryView';
+import { ApplicationTable } from './frontend/components/tables/ApplicationTable';
+import { StartupTable } from './frontend/components/tables/StartupTable';
+import { MeetingTable } from './frontend/components/tables/MeetingTable';
+import { SummaryView } from './frontend/components/SummaryView';
 import { useDashboardData } from './hooks/useDashboardData';
-import { DashboardLayout } from './components/DashboardLayout';
+import { DashboardLayout } from './frontend/components/DashboardLayout';
 
 export type ViewMode = 'dashboard' | 'summary' | 'review';
 
