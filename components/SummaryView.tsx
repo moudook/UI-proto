@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Save, Edit3, Clock, X } from 'lucide-react';
-import { SummaryBlock } from '../../types';
+import { SummaryBlock } from '../types';
 
 interface SummaryViewProps {
   title: string;
@@ -62,23 +62,23 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/10 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] ring-1 ring-black/5 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="flex items-center gap-3 text-gray-900">
-            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                <Clock className="w-5 h-5" />
+      <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl max-w-3xl w-full flex flex-col max-h-[80vh] ring-1 ring-black/5 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+        <div className="flex items-center justify-between p-8 border-b border-gray-100">
+          <div className="flex items-center gap-4 text-gray-900">
+            <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+                <Clock className="w-6 h-6" />
             </div>
             <div>
-                <h3 className="text-lg font-bold tracking-tight">Version History</h3>
-                <p className="text-xs text-gray-500 font-medium">Comparing previous saved state</p>
+                <h3 className="text-2xl font-bold tracking-tight">Version History</h3>
+                <p className="text-sm text-gray-500 font-medium">Comparing previous saved state</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="p-3 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors">
+            <X size={24} />
           </button>
         </div>
         
-        <div className="p-8 overflow-y-auto leading-relaxed text-gray-600 font-sans text-sm">
+        <div className="p-10 overflow-y-auto leading-relaxed text-gray-600 font-sans text-lg">
           <p>
             {diff.map((token, idx) => {
               if (token.type === 'added') {
@@ -100,13 +100,13 @@ const DiffModal = ({ oldText, newText, onClose }: { oldText: string, newText: st
           </p>
         </div>
 
-        <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-[2rem] flex justify-end gap-6 text-xs">
-            <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-rose-400 rounded-full"></span>
+        <div className="p-6 bg-gray-50/50 border-t border-gray-100 rounded-b-[2rem] flex justify-end gap-8 text-sm">
+            <div className="flex items-center gap-3">
+                <span className="w-3 h-3 bg-rose-400 rounded-full"></span>
                 <span className="text-gray-500 font-medium">Removed</span>
             </div>
-            <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+            <div className="flex items-center gap-3">
+                <span className="w-3 h-3 bg-emerald-400 rounded-full"></span>
                 <span className="text-gray-500 font-medium">Added</span>
             </div>
         </div>
@@ -141,16 +141,16 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          flex flex-col p-6 rounded-2xl bg-white
+          flex flex-col p-8 rounded-3xl bg-white
           relative overflow-hidden group transition-all duration-300 ease-out
           ${isActive ? 'border border-gray-300 shadow-card-hover -translate-y-1' : 'border border-transparent shadow-none'}
         `}
-        style={{ minHeight: '260px' }}
+        style={{ minHeight: '320px' }}
       >
         {/* Unsaved Changes Indicator */}
         {isDirty && (
-          <div className="absolute top-4 right-4 flex h-2 w-2 z-20" title="Unsaved changes">
-             <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 animate-pulse"></span>
+          <div className="absolute top-6 right-6 flex h-3 w-3 z-20" title="Unsaved changes">
+             <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 animate-pulse"></span>
           </div>
         )}
         
@@ -161,16 +161,16 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                     e.stopPropagation();
                     setShowDiff(true);
                 }}
-                className="absolute top-3 right-3 p-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 z-20 transition-all animate-in fade-in duration-200"
+                className="absolute top-5 right-5 p-2 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 hover:text-indigo-600 z-20 transition-all animate-in fade-in duration-200"
                 title="View History"
             >
-                <Clock size={14} />
+                <Clock size={18} />
             </button>
         )}
 
         {/* Content Section - Now at the top */}
         <div 
-          className="flex-1 relative cursor-text group/content mb-4"
+          className="flex-1 relative cursor-text group/content mb-6"
           onClick={() => setIsEditing(true)}
         >
             {isEditing ? (
@@ -179,32 +179,32 @@ const EditableSummaryCard: React.FC<EditableCardProps> = ({ item, originalItem, 
                 value={item.content}
                 onChange={(e) => onUpdate(item.id, e.target.value)}
                 onBlur={() => setIsEditing(false)}
-                className="w-full h-full resize-none focus:outline-none bg-transparent text-gray-700 leading-6 p-0 placeholder-gray-300 text-sm font-medium"
+                className="w-full h-full resize-none focus:outline-none bg-transparent text-gray-700 leading-relaxed p-0 placeholder-gray-300 text-lg font-medium"
                 placeholder="Click to add notes..."
               />
             ) : (
               <div className="h-full">
                 {item.content ? (
-                  <p className={`text-gray-600 text-sm leading-6 whitespace-pre-wrap transition-opacity duration-200 ${!isHovered ? 'line-clamp-[8]' : ''}`}>
+                  <p className={`text-gray-600 text-lg leading-relaxed whitespace-pre-wrap transition-opacity duration-200 ${!isHovered ? 'line-clamp-[10]' : ''}`}>
                     {item.content}
                   </p>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-2 select-none py-6 opacity-40">
-                    <span className="text-xs font-medium">Empty section</span>
+                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-3 select-none py-10 opacity-40">
+                    <span className="text-base font-medium">Empty section</span>
                   </div>
                 )}
                 
                 {/* Fade effect */}
                 {!isActive && item.content && (
-                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300" />
+                    <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300" />
                 )}
               </div>
             )}
         </div>
 
         {/* Title Section - Now at the bottom */}
-        <div className="flex justify-between items-end pt-4 border-t border-gray-50 mt-auto">
-            <h2 className="text-xs font-bold text-gray-900 tracking-wider uppercase">
+        <div className="flex justify-between items-end pt-6 border-t border-gray-50 mt-auto">
+            <h2 className="text-sm font-bold text-gray-900 tracking-wider uppercase">
                 {item.title}
             </h2>
         </div>
@@ -258,34 +258,34 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
   return (
     <div className="flex flex-col h-full bg-[#F8F9FA] overflow-auto pb-20 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="px-8 py-5 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
+      <div className="px-10 py-6 flex-none bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100/50">
           <div className="flex items-center justify-between w-full">
             {/* Title Only - Back button removed */}
             <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">{title}</h1>
-                <p className="text-[10px] text-gray-400 font-bold mt-0.5 uppercase tracking-wide">{subtitle}</p>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{title}</h1>
+                <p className="text-sm text-gray-400 font-bold mt-1 uppercase tracking-wide">{subtitle}</p>
             </div>
 
             <button
             onClick={handleManualSave}
             disabled={!hasUnsavedChanges}
             className={`
-                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-200
+                flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold shadow-sm transition-all duration-200
                 ${hasUnsavedChanges 
                 ? 'bg-gray-900 text-white hover:bg-black hover:shadow-lg active:scale-95' 
                 : 'bg-white text-gray-300 border border-gray-100 cursor-not-allowed'}
             `}
             >
-            <Save size={14} />
+            <Save size={18} />
             {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
             </button>
          </div>
       </div>
 
       {/* Grid Layout - Adaptive Columns */}
-      <div className="flex-1 p-8 overflow-y-auto">
+      <div className="flex-1 p-10 overflow-y-auto">
         <div className="w-full">
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-8">
                 {filteredSummaries.length > 0 ? (
                 filteredSummaries.map((item, idx) => {
                     const original = data.find(d => d.id === item.id) || item;
@@ -300,12 +300,12 @@ export const SummaryView: React.FC<SummaryViewProps> = ({
                     );
                 })
                 ) : (
-                <div className="col-span-full py-20 text-center animate-in fade-in zoom-in-95 duration-300">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
-                        <Edit3 size={20} />
+                <div className="col-span-full py-24 text-center animate-in fade-in zoom-in-95 duration-300">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                        <Edit3 size={28} />
                     </div>
-                    <div className="text-gray-900 font-medium mb-1 text-sm">No notes found</div>
-                    <div className="text-xs text-gray-400">Try adjusting your search filters</div>
+                    <div className="text-gray-900 font-medium mb-2 text-lg">No notes found</div>
+                    <div className="text-sm text-gray-400">Try adjusting your search filters</div>
                 </div>
                 )}
             </div>
