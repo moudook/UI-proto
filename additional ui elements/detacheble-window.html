@@ -54,7 +54,7 @@
         }
     </style>
 </head>
-<body class="bg-transparent h-screen flex flex-col items-center justify-start p-2 overflow-hidden">
+<body class="bg-transparent h-screen flex flex-col items-center justify-start p-2 overflow-hidden text-black">
 
     <!-- 1. TOP CONTROL BAR (draggable) -->
     <div class="z-50 flex items-center bg-white text-gray-600 rounded-full px-2 py-2 shadow-lg border border-gray-200 select-none gap-2" style="-webkit-app-region: drag;">
@@ -93,7 +93,7 @@
         
         <!-- Header -->
         <div class="flex justify-between items-center px-5 pt-4 pb-2 border-b border-gray-50">
-            <h3 class="text-indigo-600 font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+            <h3 class="text-black font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
                 AI Insights
             </h3>
@@ -106,10 +106,10 @@
         </div>
 
         <!-- Input Footer -->
-        <div class="px-5 py-4 bg-gray-50 border-t border-gray-100">
-             <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 transition">
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-100">
+             <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-100 transition">
                 <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-[10px] font-bold">AI</div>
-                <input type="text" placeholder="Ask a follow-up question..." class="bg-transparent outline-none text-sm text-gray-700 w-full placeholder-gray-400">
+                <input type="text" placeholder="Ask a follow-up question..." class="bg-transparent outline-none text-base text-black w-full placeholder-gray-400">
                 <button class="text-gray-400 hover:text-indigo-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
@@ -132,6 +132,7 @@
         // State
         let isPanelOpen = false;
         let isMuted = false;
+        let apiTimeout;
 
         // --- Close Button ---
         endMeetingBtn.addEventListener('click', () => {
@@ -162,23 +163,57 @@
                 renderLoadingState();
 
                 // --------------------------------------------------------
-                // TODO: FETCH DATA FROM YOUR BACKEND HERE
+                // API CALL WITH ERROR HANDLING
                 // --------------------------------------------------------
-                /*
-                try {
-                    const response = await fetch('/api/get-insights');
-                    const text = await response.text(); // or response.json().content
-                    renderAIContent(text);
-                } catch (error) {
-                    contentContainer.innerHTML = '<p class="text-red-500">Error loading content.</p>';
+                
+                // Clear any existing timeout
+                if (apiTimeout) {
+                    clearTimeout(apiTimeout);
                 }
-                */
-               // --------------------------------------------------------
-
-               // DEMO: Simulating a response for demonstration (remove this in production)
-               setTimeout(() => renderAIContent("Based on the current discussion, the team seems aligned on the Q4 goals, but there is ambiguity regarding the budget cap for the marketing initiatives. I suggest asking the lead about the specific dollar amount allocated for November ad spend."), 1500);
-
+                
+                // Set a timeout to detect if the API is not responding
+                apiTimeout = setTimeout(() => {
+                    renderErrorState();
+                }, 10000); // 10 second timeout
+                
+                try {
+                    // Attempt to make the API call
+                    if (window.electronAPI) {
+                        // If using Electron's IPC
+                        window.electronAPI.invoke('get-ai-insights')
+                            .then(response => {
+                                // Clear the timeout since we got a response
+                                clearTimeout(apiTimeout);
+                                renderAIContent(response);
+                            })
+                            .catch(error => {
+                                // Clear the timeout since we got an error response
+                                clearTimeout(apiTimeout);
+                                renderErrorState(error.message);
+                            });
+                    } else {
+                        // If using regular fetch API
+                        const response = await fetch('/api/get-insights');
+                        clearTimeout(apiTimeout); // Clear timeout on successful fetch
+                        
+                        if (!response.ok) {
+                            throw new Error(`Server responded with status: ${response.status}`);
+                        }
+                        
+                        const text = await response.text();
+                        renderAIContent(text);
+                    }
+                } catch (error) {
+                    // Clear the timeout since we got an error
+                    clearTimeout(apiTimeout);
+                    renderErrorState(error.message);
+                }
             } else {
+                // Clear any existing timeout when closing panel
+                if (apiTimeout) {
+                    clearTimeout(apiTimeout);
+                }
+                
                 // Resize window back to compact size
                 if (window.electronAPI) {
                     window.electronAPI.send('resize-detachable-window', { width: 520, height: 60 });
@@ -209,15 +244,35 @@
             `;
         }
 
+        // Renders an error state when the API doesn't respond
+        function renderErrorState(errorMessage = "Connection to main application failed") {
+            contentContainer.innerHTML = `
+                <div class="fade-in">
+                    <div class="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
+                        <div class="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-medium text-red-800">Connection Error</h4>
+                            <p class="text-xs text-red-600 mt-1">${errorMessage}. The main application may not be responding.</p>
+                            <button onclick="location.reload()" class="text-xs text-red-700 underline mt-2 hover:text-red-800">Try Again</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Renders a single chunk of text
         function renderAIContent(textChunk) {
             if (!textChunk) return;
 
-            // Simple text rendering
-            // whitespace-pre-line ensures new lines from the backend are respected
             contentContainer.innerHTML = `
                 <div class="fade-in">
-                    <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">${textChunk}</p>
+                    <p class="text-black text-sm leading-relaxed whitespace-pre-line">${textChunk}</p>
                 </div>
             `;
         }
