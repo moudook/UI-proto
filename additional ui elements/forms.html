@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Ratio Form</title>
+    
+    <!-- PREMIUM FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- THE GOLDEN RATIO (Phi) --- */
+            --phi: 1.618;
+            --base-size: 16px;
+
+            /* Golden Typography Scale */
+            --text-xs: calc(var(--base-size) / var(--phi));   /* ~9.8px */
+            --text-sm: calc(var(--base-size) / 1.2);          /* ~13.3px */
+            --text-body: var(--base-size);                    /* 16px */
+            --text-h2: calc(var(--base-size) * var(--phi));   /* ~25.8px */
+            --text-h1: calc(var(--text-h2) * var(--phi));     /* ~41.8px */
+
+            /* Golden Spacing Scale */
+            --space-xs: calc(var(--base-size) / var(--phi)); /* ~10px */
+            --space-sm: var(--base-size);                    /* 16px */
+            --space-md: calc(var(--base-size) * var(--phi)); /* ~26px */
+            --space-lg: calc(var(--space-md) * var(--phi));  /* ~42px */
+            
+            /* Colors */
+            --bg-body: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --primary: #0F172A;
+            --primary-hover: #334155;
+            
+            /* Accents */
+            --accent-purple: #7C3AED;
+            --accent-gold: #F59E0B;
+            --accent-green: #10B981;
+            --accent-blue: #3B82F6;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            /* Golden Line Height */
+            line-height: var(--phi); 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: var(--space-lg) var(--space-sm);
+        }
+
+        .container {
+            width: 100%;
+            /* Width roughly based on Golden Rectangle proportions relative to viewport */
+            max-width: 720px; 
+        }
+
+        /* --- HEADER --- */
+        .header {
+            margin-bottom: var(--space-lg); /* 42px */
+        }
+        
+        .header h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: var(--text-h1); /* ~42px */
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin: 0 0 var(--space-xs) 0;
+            line-height: 1.1;
+        }
+        
+        .header p {
+            font-size: var(--text-body);
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: var(--space-md); /* 26px */
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        .btn {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: white;
+            border: 1px solid var(--border);
+            padding: var(--space-xs) var(--space-sm); /* 10px 16px */
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+        }
+        .btn:hover { border-color: var(--primary); color: var(--primary); }
+        .btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .toast {
+            font-size: var(--text-sm); font-weight: 700; color: #059669;
+            background: #ECFDF5; padding: 6px 16px; border-radius: 100px;
+            opacity: 0; transition: opacity 0.5s; border: 1px solid #D1FAE5;
+        }
+        .toast.visible { opacity: 1; }
+
+        /* --- CARD DESIGN --- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--space-sm); /* 16px */
+            padding: var(--space-lg);       /* 42px Padding (Golden Space) */
+            margin-bottom: var(--space-md); /* 26px */
+            position: relative;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        }
+
+        .card.editing {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.05);
+        }
+
+        .dot-indicator {
+            position: absolute;
+            top: calc(var(--space-lg) + 6px); /* Align with text */
+            right: var(--space-lg);
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+
+        .q-label {
+            display: block;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: var(--text-body);
+            margin-bottom: var(--space-sm);
+            color: var(--text-main);
+        }
+
+        /* --- INPUTS --- */
+        input, select, textarea {
+            width: 100%;
+            padding: var(--space-sm); /* 16px */
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            background: #FAFAFA;
+            color: var(--text-main);
+            outline: none;
+            transition: 0.2s;
+            line-height: 1.5;
+        }
+        input:focus, select:focus, textarea:focus {
+            background: white;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        select {
+            cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right var(--space-sm) center; background-size: 16px;
+        }
+
+        /* File Input */
+        input[type="file"] { background: white; padding: 8px; cursor: pointer; }
+        input[type="file"]::file-selector-button {
+            margin-right: var(--space-sm); border: none; background: #F3F4F6;
+            padding: 8px 16px; border-radius: 6px; color: var(--text-main);
+            font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* Options */
+        .radio-wrapper {
+            display: flex; align-items: center; margin-bottom: 8px;
+        }
+        .radio-wrapper input { width: 18px; height: 18px; margin-right: 12px; }
+
+        /* --- EDITOR PANEL --- */
+        .editor {
+            display: none; background: #F8FAFC; 
+            padding: var(--space-md); /* 26px */
+            border-radius: 12px; margin-bottom: var(--space-md);
+            border: 1px dashed var(--border);
+        }
+        .editor-label {
+            font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;
+            color: var(--text-muted); margin-bottom: 8px; display: block;
+        }
+        .input-white { background: white !important; }
+
+        /* --- ACTIONS --- */
+        .actions {
+            display: none; margin-top: var(--space-md); padding-top: var(--space-sm);
+            border-top: 1px solid #F1F5F9; justify-content: flex-end; gap: var(--space-sm);
+        }
+        body.edit-mode .actions { display: flex; }
+
+        .btn-text {
+            background: none; border: none; font-size: 13px; font-weight: 600;
+            color: var(--text-muted); cursor: pointer; padding: 6px 12px;
+            border-radius: 6px; font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-text:hover { background: #F1F5F9; color: var(--text-main); }
+        .btn-text.danger { color: #EF4444; }
+        .btn-text.danger:hover { background: #FEF2F2; }
+
+        /* --- SUBMIT --- */
+        .submit-main {
+            width: 100%; background: var(--primary); color: white;
+            padding: var(--space-md); /* 26px for grandeur */
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; margin-top: var(--space-lg);
+            font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.02em;
+            transition: all 0.2s;
+        }
+        .submit-main:hover { opacity: 0.95; transform: translateY(-2px); }
+
+        /* --- SUCCESS --- */
+        #success-view {
+            display: none; background: white; border: 1px solid var(--border);
+            padding: var(--space-lg); border-radius: var(--space-sm); text-align: center;
+        }
+        .success-icon {
+            width: 60px; height: 60px; background: #ECFDF5; color: #059669;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; margin: 0 auto var(--space-md) auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="header" id="header-ui">
+            <h1>Application Form</h1>
+            <p>Please provide your details below.</p>
+        </div>
+
+        <div class="controls">
+            <div class="toast" id="saveToast">Layout Saved</div>
+            <button class="btn" onclick="saveLayout()" id="btnSave" style="display:none;">Save Layout</button>
+            <button class="btn" onclick="toggleEditMode()" id="btnEdit">Edit Form</button>
+        </div>
+
+        <form id="mainForm">
+            <div id="form-body"></div>
+            <button type="submit" class="submit-main">Submit Application</button>
+        </form>
+
+        <div id="success-view">
+            <div class="success-icon">✓</div>
+            <h2 style="font-family: 'Plus Jakarta Sans'; margin-top:0;">Received</h2>
+            <p style="color: var(--text-muted);">Your information has been securely recorded.</p>
+            <button class="btn" onclick="location.reload()" style="margin-top:20px;">Submit Another</button>
+        </div>
+
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        const uid = () => 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+
+        // Initial Data
+        const defaultData = [
+            { id: uid(), label: "Full Name", type: "text", options: "" },
+            { id: uid(), label: "Department", type: "dropdown", options: "Engineering, Product, Marketing, Sales" },
+            { id: uid(), label: "Contract Type", type: "radio", options: "Full-Time, Part-Time, Freelance" },
+            { id: uid(), label: "Resume (PDF)", type: "file", options: "" }
+        ];
+
+        let questions = JSON.parse(localStorage.getItem('golden_ratio_data')) || defaultData;
+
+        function render() {
+            const container = document.getElementById('form-body');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.id = q.id;
+
+                // Color Coding for Indicator
+                let dotColor = '#E5E7EB';
+                if (q.type === 'text') dotColor = 'var(--accent-purple)';
+                if (q.type === 'dropdown') dotColor = 'var(--accent-gold)';
+                if (q.type === 'radio') dotColor = 'var(--accent-green)';
+                if (q.type === 'file') dotColor = 'var(--accent-blue)';
+                
+                // 1. Editor HTML
+                const editorHtml = `
+                    <div class="editor">
+                        <div style="margin-bottom:20px;">
+                            <label class="editor-label">Label</label>
+                            <input type="text" class="input-white edit-label" value="${q.label}">
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label class="editor-label">Type</label>
+                            <select class="input-white edit-type" onchange="toggleOpts(this)">
+                                <optgroup label="Core">
+                                    <option value="text" ${q.type === 'text' ? 'selected' : ''}>Text Answer</option>
+                                    <option value="radio" ${q.type === 'radio' ? 'selected' : ''}>Options (Radio)</option>
+                                    <option value="dropdown" ${q.type === 'dropdown' ? 'selected' : ''}>Dropdown</option>
+                                    <option value="file" ${q.type === 'file' ? 'selected' : ''}>File Attachment</option>
+                                </optgroup>
+                                <optgroup label="Advanced">
+                                    <option value="textarea" ${q.type === 'textarea' ? 'selected' : ''}>Paragraph</option>
+                                    <option value="email" ${q.type === 'email' ? 'selected' : ''}>Email</option>
+                                    <option value="date" ${q.type === 'date' ? 'selected' : ''}>Date</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="opts-box" style="margin-bottom:20px; display:${(q.type === 'radio' || q.type === 'dropdown') ? 'block' : 'none'}">
+                            <label class="editor-label">Options (Comma Separated)</label>
+                            <input type="text" class="input-white edit-opts" value="${q.options || ''}" placeholder="Option 1, Option 2">
+                        </div>
+
+                        <div style="text-align:right;">
+                            <button type="button" class="btn primary" onclick="saveBlock('${q.id}', this)">Done</button>
+                        </div>
+                    </div>
+                `;
+
+                // 2. View HTML
+                let inputHtml = '';
+                const getOpts = () => (q.options || "Option 1, Option 2").split(',').map(s => s.trim()).filter(s => s);
+
+                if (q.type === 'text') inputHtml = `<input type="text" name="${q.id}" required placeholder="Type answer...">`;
+                else if (q.type === 'textarea') inputHtml = `<textarea name="${q.id}" rows="4" required placeholder="Type answer..."></textarea>`;
+                else if (q.type === 'email') inputHtml = `<input type="email" name="${q.id}" required placeholder="email@example.com">`;
+                else if (q.type === 'date') inputHtml = `<input type="date" name="${q.id}" required>`;
+                else if (q.type === 'file') inputHtml = `<input type="file" name="${q.id}" required>`;
+                
+                else if (q.type === 'radio') {
+                    getOpts().forEach(opt => {
+                        inputHtml += `
+                            <div class="radio-wrapper">
+                                <input type="radio" name="${q.id}" value="${opt}">
+                                <span style="font-size:15px;">${opt}</span>
+                            </div>`;
+                    });
+                }
+                
+                else if (q.type === 'dropdown') {
+                    let optionsHtml = `<option value="" disabled selected>Select an option...</option>`;
+                    getOpts().forEach(opt => {
+                        optionsHtml += `<option value="${opt}">${opt}</option>`;
+                    });
+                    inputHtml = `<select name="${q.id}" required>${optionsHtml}</select>`;
+                }
+
+                const viewHtml = `
+                    <div class="view-panel">
+                        <div class="dot-indicator" style="background:${dotColor}"></div>
+                        <label class="q-label">${q.label}</label>
+                        ${inputHtml}
+                    </div>
+                `;
+
+                // 3. Footer HTML
+                const footerHtml = `
+                    <div class="actions">
+                        <button type="button" class="btn-text danger" onclick="deleteBlock('${q.id}')">Delete</button>
+                        <button type="button" class="btn-text" onclick="addBlockBelow(${index})">Add Below</button>
+                        <button type="button" class="btn-text" onclick="editBlock(this)">Edit</button>
+                    </div>
+                `;
+
+                card.innerHTML = editorHtml + viewHtml + footerHtml;
+                container.appendChild(card);
+            });
+        }
+
+        // --- FUNCTIONS ---
+        function editBlock(btn) {
+            const card = btn.closest('.card');
+            card.classList.add('editing');
+            card.querySelector('.view-panel').style.display = 'none';
+            card.querySelector('.editor').style.display = 'block';
+        }
+
+        function saveBlock(id, btn) {
+            const card = btn.closest('.card');
+            const newLabel = card.querySelector('.edit-label').value;
+            const newType = card.querySelector('.edit-type').value;
+            const newOpts = card.querySelector('.edit-opts').value;
+
+            const item = questions.find(q => q.id === id);
+            if (item) {
+                item.label = newLabel;
+                item.type = newType;
+                item.options = newOpts;
+            }
+            card.classList.remove('editing');
+            render();
+        }
+
+        function deleteBlock(id) {
+            if(questions.length <= 1) return alert("You must keep at least one block.");
+            questions = questions.filter(q => q.id !== id);
+            render();
+        }
+
+        function addBlockBelow(index) {
+            questions.splice(index + 1, 0, { id: uid(), label: "New Question", type: "text", options: "" });
+            render();
+            setTimeout(() => {
+                const newCard = document.querySelectorAll('.card')[index+1];
+                if(newCard) editBlock(newCard.querySelector('.btn-text:last-child'));
+            }, 50);
+        }
+
+        function toggleOpts(select) {
+            const box = select.closest('.editor').querySelector('.opts-box');
+            if (select.value === 'radio' || select.value === 'dropdown') {
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function toggleEditMode() {
+            document.body.classList.toggle('edit-mode');
+            const isEditing = document.body.classList.contains('edit-mode');
+            const btn = document.getElementById('btnEdit');
+            const saveBtn = document.getElementById('btnSave');
+
+            if(isEditing) {
+                btn.innerHTML = "Done Editing";
+                btn.classList.add('primary');
+                saveBtn.style.display = 'block';
+            } else {
+                btn.innerHTML = "Edit Form";
+                btn.classList.remove('primary');
+                saveBtn.style.display = 'none';
+                render();
+            }
+        }
+
+        function saveLayout() {
+            localStorage.setItem('golden_ratio_data', JSON.stringify(questions));
+            const toast = document.getElementById('saveToast');
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 2000);
+        }
+
+        // --- SUBMISSION ---
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+        });
+
+        document.getElementById('mainForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const entry = { submittedAt: new Date().toLocaleString() };
+
+            for (const q of questions) {
+                const val = formData.get(q.id);
+                if (val instanceof File) {
+                    if (val.size > 0) {
+                        try {
+                            entry[q.label] = { type: 'file', name: val.name, data: await toBase64(val) };
+                        } catch (err) { console.error(err); }
+                    } else {
+                        entry[q.label] = "No File";
+                    }
+                } else {
+                    entry[q.label] = val;
+                }
+            }
+
+            const history = JSON.parse(localStorage.getItem('golden_ratio_responses')) || [];
+            history.push(entry);
+            try {
+                localStorage.setItem('golden_ratio_responses', JSON.stringify(history));
+                this.style.display = 'none';
+                document.getElementById('header-ui').style.display = 'none';
+                document.querySelector('.controls').style.display = 'none';
+                document.getElementById('success-view').style.display = 'block';
+            } catch (e) {
+                alert("Storage limit reached.");
+            }
+        });
+
+        render();
+    </script>
+</body>
+</html>
