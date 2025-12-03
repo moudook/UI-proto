@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Funding | VC Portal</title>
+    
+    <!-- FONTS: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- COLOR PALETTE --- */
+            --primary: #0F172A;       /* Dark Navy text */
+            --secondary: #64748B;     /* Muted Grey text */
+            --accent: #3B82F6;        /* Bright Blue action color */
+            
+            --bg-body: #F1F5F9;       /* Light Grey background */
+            --bg-card: #FFFFFF;       /* White card background */
+            --border: #E2E8F0;        /* Light border color */
+
+            /* --- UI METRICS --- */
+            --radius-input: 12px;
+            --radius-pill: 50px;
+            --radius-card: 24px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 60px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 580px;
+        }
+
+        /* --- HEADER SECTION --- */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .brand-logo {
+            font-size: 24px;
+            font-weight: 800;
+            /* Gradient Text Effect */
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .brand-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.03em;
+            color: #1E293B;
+        }
+        
+        .brand-header p {
+            font-size: 18px;
+            color: var(--secondary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- FORM CARD --- */
+        .form-card {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: var(--radius-card);
+            /* Soft shadow for depth */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- DYNAMIC FIELD STYLING --- */
+        .form-group {
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards; /* Animated via JS delay */
+        }
+
+        .label {
+            display: block;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #334155;
+            letter-spacing: -0.01em;
+        }
+        
+        .label span.req {
+            color: #EF4444; /* Red asterisk */
+            margin-left: 2px;
+        }
+
+        /* Inputs & Textareas */
+        input[type="text"], 
+        input[type="email"], 
+        select, 
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-input);
+            font-family: inherit;
+            font-size: 16px;
+            color: var(--primary);
+            transition: all 0.2s;
+            background: #F8FAFC;
+            appearance: none; /* Removes default browser styles */
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: #FFFFFF;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Custom Dropdown Arrow */
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 20px;
+        }
+
+        /* --- RADIO PILLS (MODERN TAGS) --- */
+        .radio-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .radio-pill {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        /* Hide default radio circle */
+        .radio-pill input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .pill-content {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--secondary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        
+        .radio-pill:hover .pill-content {
+            border-color: #94A3B8;
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        
+        /* Checked State Logic */
+        .radio-pill input:checked + .pill-content {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* --- SUBMIT BUTTON --- */
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-input);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+        
+        .submit-btn:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* --- LOADING SKELETONS --- */
+        #loading-state {
+            padding: 20px 0;
+        }
+        .skeleton {
+            background: #f1f5f9;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite;
+        }
+        .sk-label { height: 20px; width: 40%; margin-bottom: 10px; }
+        .sk-input { height: 56px; width: 100%; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* Mobile Responsiveness */
+        @media(max-width: 600px) {
+            body { padding: 40px 16px; }
+            .form-card { padding: 24px; }
+            .brand-header h1 { font-size: 28px; }
+            .pill-content { padding: 10px 16px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="brand-header">
+        <div class="brand-logo">VentureCapital.os</div>
+        <h1>Startup Application</h1>
+        <p>Tell us about your company. We review submissions within 48 hours.</p>
+    </div>
+
+    <!-- The Form -->
+    <form id="startupForm" class="form-card" novalidate>
+        
+        <!-- Dynamic Fields Container -->
+        <div id="dynamic-fields">
+            <!-- Loading Skeleton (Shown before JS loads data) -->
+            <div id="loading-state">
+                <div class="skeleton sk-label"></div>
+                <div class="skeleton sk-input"></div>
+                
+                <div class="skeleton sk-label" style="width: 25%"></div>
+                <div class="skeleton sk-input"></div>
+                
+                <div class="skeleton sk-label" style="width: 50%"></div>
+                <div class="skeleton sk-input" style="height: 100px"></div>
+            </div>
+        </div>
+        
+        <!-- Submit Action -->
+        <button type="submit" class="submit-btn">Submit Application</button>
+    </form>
+</div>
+
+<script>
+    /**
+     * StartupFormRenderer
+     * Responsible for fetching the admin configuration and building the UI.
+     */
+    class StartupFormRenderer {
+        constructor() {
+            this.container = document.getElementById('dynamic-fields');
+            this.form = document.getElementById('startupForm');
+            // This key must match the one used in the Admin HTML file
+            this.STORAGE_KEY = 'goldenForm';
+            
+            this.init();
+        }
+
+        async init() {
+            // 1. Simulate network delay (gives a professional "loading" feel)
+            await new Promise(r => setTimeout(r, 800));
+            
+            // 2. Fetch the schema (Currently from LocalStorage, would be API in production)
+            const schema = this.fetchSchema();
+            
+            // 3. Render
+            if(schema && schema.length > 0) {
+                this.render(schema);
+            } else {
+                this.renderEmptyState();
+            }
+
+            // 4. Bind Submit Listener
+            this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        fetchSchema() {
+            try {
+                // In a real app, this is: await fetch('/api/get-form-schema');
+                const data = localStorage.getItem(this.STORAGE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch(e) {
+                console.error("Failed to load form definitions", e);
+                return null;
+            }
+        }
+
+        render(schema) {
+            this.container.innerHTML = ''; // Clear loading skeletons
+
+            schema.forEach((field, index) => {
+                // Create container for the field
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                // Stagger animations so they slide up one by one
+                group.style.animationDelay = `${index * 80}ms`; 
+
+                // 1. Create Label
+                const labelHTML = `
+                    <label class="label" for="${field.id}">
+                        ${field.label}
+                        ${field.required ? '<span class="req">*</span>' : ''}
+                    </label>
+                `;
+
+                // 2. Create Input based on Type
+                let inputHTML = '';
+                
+                if (field.type === 'text') {
+                    inputHTML = `<input type="text" id="${field.id}" name="${field.id}" placeholder="Type here..." ${field.required?'required':''}>`;
+                } 
+                else if (field.type === 'email') {
+                    inputHTML = `<input type="email" id="${field.id}" name="${field.id}" placeholder="name@company.com" ${field.required?'required':''}>`;
+                } 
+                else if (field.type === 'dropdown') {
+                    const opts = this.parseOptions(field.options);
+                    inputHTML = `
+                        <select id="${field.id}" name="${field.id}" ${field.required?'required':''}>
+                            <option value="" disabled selected>Select an option...</option>
+                            ${opts.map(o => `<option value="${o}">${o}</option>`).join('')}
+                        </select>
+                    `;
+                } 
+                else if (field.type === 'radio') {
+                    const opts = this.parseOptions(field.options);
+                    inputHTML = `
+                        <div class="radio-options">
+                            ${opts.map(o => `
+                                <label class="radio-pill">
+                                    <input type="radio" name="${field.id}" value="${o}" ${field.required?'required':''}>
+                                    <span class="pill-content">${o}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                // 3. Assemble and Append
+                group.innerHTML = labelHTML + inputHTML;
+                this.container.appendChild(group);
+            });
+        }
+
+        // Helper to convert comma-separated string to array
+        parseOptions(optionString) {
+            if(!optionString) return [];
+            return optionString.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        renderEmptyState() {
+            this.container.innerHTML = `
+                <div style="text-align:center; padding: 40px 0; color: var(--secondary);">
+                    <h3 style="margin:0; color:var(--primary);">No questions yet</h3>
+                    <p style="margin-top:8px; font-size:14px;">The application form is currently being updated.</p>
+                </div>
+            `;
+            // Hide submit button if form is empty
+            const btn = document.querySelector('.submit-btn');
+            if(btn) btn.style.display = 'none';
+        }
+
+        handleSubmit(e) {
+            e.preventDefault();
+            
+            // Native HTML5 Validation check
+            if(!this.form.checkValidity()) {
+                this.form.reportValidity(); 
+                return;
+            }
+
+            // Capture Data
+            const formData = new FormData(this.form);
+            const payload = {};
+            for (let [key, value] of formData.entries()) {
+                payload[key] = value;
+            }
+
+            console.log("🚀 Payload ready for backend:", payload);
+
+            // UI Feedback: Button State
+            const btn = document.querySelector('.submit-btn');
+            btn.innerHTML = 'Processing Application...';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            // Simulate API processing time
+            setTimeout(() => {
+                this.showSuccessMessage();
+            }, 1200);
+        }
+
+        showSuccessMessage() {
+            // Replace form with success card
+            this.form.innerHTML = `
+                <div style="text-align:center; padding:60px 20px; animation: fadeIn 0.5s;">
+                    <div style="font-size:60px; margin-bottom:24px;">🎉</div>
+                    <h2 style="color:var(--primary); margin:0 0 12px 0;">Application Received!</h2>
+                    <p style="color:var(--secondary); font-size:16px; line-height:1.5;">
+                        Thank you for applying. Our team will review your pitch deck and get back to you shortly.
+                    </p>
+                    <button onclick="location.reload()" 
+                        style="margin-top:32px; background:white; border:1px solid var(--border); padding:10px 20px; border-radius:50px; color:var(--primary); cursor:pointer; font-weight:600; font-family:inherit; transition:all 0.2s;">
+                        Submit another application
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    // Initialize App when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        new StartupFormRenderer();
+    });
+</script>
+
+</body>
+</html>

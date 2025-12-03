@@ -31,6 +31,65 @@ export const ExpandableContent = ({ content, widthClass = COL.TEXT_LG }: { conte
   );
 };
 
+// --- QnA Expandable Component ---
+export const QnAExpandable = ({ qnaData, widthClass = COL.TEXT_XL }: { qnaData: Record<string, any>, widthClass?: string }) => {
+  const entries = Object.entries(qnaData || {});
+  const isEmpty = entries.length === 0;
+
+  return (
+    <div className={`group relative ${widthClass}`}>
+      {/* Default / Collapsed View */}
+      <div className="text-lg text-gray-500 cursor-default w-full font-medium transition-colors group-hover:text-indigo-600">
+        {isEmpty ? (
+          <span className="text-gray-400 italic">No Q&A data</span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold">
+              {entries.length}
+            </span>
+            <span>Q&A pairs</span>
+          </span>
+        )}
+      </div>
+
+      {/* Hover / Expanded View */}
+      {!isEmpty && (
+        <div className="hidden group-hover:block absolute left-0 -top-2 z-50 bg-white p-6 rounded-xl shadow-2xl border border-gray-200 w-full min-w-[500px] max-w-[700px] max-h-[600px] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Q&A Details</h3>
+              <span className="text-sm text-gray-500">{entries.length} items</span>
+            </div>
+
+            {entries.map(([question, answer], index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                    Q
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-semibold text-gray-900 leading-relaxed">{question}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">
+                    A
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {typeof answer === 'object' ? JSON.stringify(answer, null, 2) : String(answer)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Table Helper Components ---
 
 export const HeaderCell = ({ children, className = '', width = '' }: { children?: React.ReactNode, className?: string, width?: string }) => (

@@ -35,6 +35,65 @@ const ExpandableContent = ({ content, widthClass = COL.TEXT_LG }: { content: str
   );
 };
 
+// --- QnA Expandable Component ---
+const QnAExpandable = ({ qnaData, widthClass = COL.TEXT_XL }: { qnaData: Record<string, any>, widthClass?: string }) => {
+  const entries = Object.entries(qnaData || {});
+  const isEmpty = entries.length === 0;
+
+  return (
+    <div className={`group relative ${widthClass}`}>
+      {/* Default / Collapsed View */}
+      <div className="text-sm text-gray-500 cursor-default w-full transition-colors group-hover:text-indigo-600">
+        {isEmpty ? (
+          <span className="text-gray-400 italic">No Q&A data</span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold">
+              {entries.length}
+            </span>
+            <span>Q&A pairs</span>
+          </span>
+        )}
+      </div>
+
+      {/* Hover / Expanded View */}
+      {!isEmpty && (
+        <div className="hidden group-hover:block absolute left-0 -top-2 z-50 bg-white p-5 rounded-xl shadow-2xl border border-gray-200 w-full min-w-[450px] max-w-[650px] max-h-[500px] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-3">
+              <h3 className="text-sm font-bold text-gray-900">Q&A Details</h3>
+              <span className="text-xs text-gray-500">{entries.length} items</span>
+            </div>
+
+            {entries.map(([question, answer], index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
+                    Q
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-gray-900 leading-relaxed">{question}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">
+                    A
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {typeof answer === 'object' ? JSON.stringify(answer, null, 2) : String(answer)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Table Helper Components ---
 
 const HeaderCell = ({ children, className = '', width = '' }: { children?: React.ReactNode, className?: string, width?: string }) => (
@@ -74,12 +133,12 @@ export const ApplicationTable: React.FC<TableProps<ApplicationData>> = ({ data, 
             <HeaderCell width={COL.TEXT_MD}>Industry</HeaderCell>
             <HeaderCell width={COL.TEXT_MD}>Location</HeaderCell>
             <HeaderCell width={COL.TEXT_MD}>Founder</HeaderCell>
-            <HeaderCell width={COL.NUM}>Round</HeaderCell>
-            <HeaderCell width={COL.NUM}>Amount</HeaderCell>
-            <HeaderCell width={COL.NUM}>Valuation</HeaderCell>
-            <HeaderCell width={COL.STATUS}>Stage</HeaderCell>
-            <HeaderCell width={COL.TEXT_LG}>Description</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Contact</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Email</HeaderCell>
+            <HeaderCell width={COL.DATE}>Date Added</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Startup Description</HeaderCell>
             <HeaderCell width={COL.TEXT_LG}>Key Insight</HeaderCell>
+            <HeaderCell width={COL.TEXT_XL}>Q&A</HeaderCell>
             <HeaderCell width={COL.STATUS}>Status</HeaderCell>
             <HeaderCell width={COL.ACTION}></HeaderCell>
           </tr>
@@ -119,17 +178,25 @@ export const ApplicationTable: React.FC<TableProps<ApplicationData>> = ({ data, 
                    <span className="text-gray-700">{row.founderName}</span>
                 </div>
               </Cell>
-              <Cell className={COL.NUM}><span className="bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">{row.roundType}</span></Cell>
-              <Cell className={`${COL.NUM} font-mono text-xs font-medium text-gray-700`}>{row.amountRaising}</Cell>
-              <Cell className={`${COL.NUM} font-mono text-xs text-gray-400`}>{row.valuation}</Cell>
-              <Cell className={COL.STATUS}><span className="text-[11px] font-semibold text-indigo-600 tracking-wide uppercase">{row.stage}</span></Cell>
-              
+              <Cell className={`${COL.TEXT_MD} text-gray-500 text-xs`}>{row.founderContact}</Cell>
+              <Cell className={`${COL.TEXT_MD} text-gray-500 text-xs`}>{row.email}</Cell>
+              <Cell className={`${COL.DATE} text-gray-500`}>
+                 <div className="flex items-center gap-2 text-xs">
+                    <Calendar size={12} className="text-gray-400"/>
+                    {new Date(row.dateAdded).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                 </div>
+              </Cell>
+
               <Cell className={`${COL.TEXT_LG}`}>
-                  <ExpandableContent content={row.description} widthClass={COL.TEXT_LG}/>
+                  <ExpandableContent content={row.startupDescription} widthClass={COL.TEXT_LG}/>
               </Cell>
               
               <Cell className={`${COL.TEXT_LG}`}>
                 <ExpandableContent content={row.keyInsight} widthClass={COL.TEXT_LG} />
+              </Cell>
+
+              <Cell className={`${COL.TEXT_XL}`}>
+                <QnAExpandable qnaData={row.QnA} widthClass={COL.TEXT_XL} />
               </Cell>
 
               <Cell className={COL.STATUS}>
@@ -174,8 +241,19 @@ export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameCl
             <th className={`sticky left-[70px] z-30 bg-white/95 backdrop-blur px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
               Company
             </th>
-            <HeaderCell width={COL.DATE}>Date Accepted</HeaderCell>
-            <HeaderCell width={COL.TEXT_XL}>Context</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Industry</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Location</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Founder</HeaderCell>
+            <HeaderCell width={COL.NUM}>Round</HeaderCell>
+            <HeaderCell width={COL.NUM}>Amount</HeaderCell>
+            <HeaderCell width={COL.NUM}>Valuation</HeaderCell>
+            <HeaderCell width={COL.STATUS}>Status</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Deal Lead</HeaderCell>
+            <HeaderCell width={COL.DATE}>Date Added</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Summary</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Notes</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Next Action</HeaderCell>
+            <HeaderCell width={COL.DATE}>Reminder Date</HeaderCell>
             <HeaderCell width={COL.NUM}>App ID</HeaderCell>
           </tr>
         </thead>
@@ -186,8 +264,8 @@ export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameCl
                 {row.id.split('-')[1]}
               </td>
               <td className={`sticky left-[70px] z-10 bg-white group-hover/row:bg-gray-50/40 px-6 py-4 text-sm font-semibold text-gray-900 border-b border-gray-50 ${COL.COMPANY} shadow-[4px_0_12px_-4px_rgba(0,0,0,0.02)]`}>
-                <button 
-                  onClick={() => onNameClick(row.companyName)}
+                <button
+                  onClick={() => onNameClick(row.id, row.companyName)}
                   className="hover:text-indigo-600 transition-colors text-left w-full flex items-center gap-3"
                 >
                   <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center border border-emerald-100/50">
@@ -196,14 +274,54 @@ export const StartupTable: React.FC<TableProps<StartupData>> = ({ data, onNameCl
                   <span className="truncate">{row.companyName}</span>
                 </button>
               </td>
+              <Cell className={`${COL.TEXT_MD} font-medium`}>{row.industry}</Cell>
+              <Cell className={`${COL.TEXT_MD} text-gray-500`}>
+                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <MapPin size={12} />
+                    {row.location.split(',')[0]}
+                 </div>
+              </Cell>
+              <Cell className={COL.TEXT_MD}>
+                <div className="flex items-center gap-2">
+                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 text-[10px] flex items-center justify-center font-bold text-emerald-500">
+                      {row.founderName.charAt(0)}
+                   </div>
+                   <span className="text-gray-700">{row.founderName}</span>
+                </div>
+              </Cell>
+              <Cell className={COL.NUM}><span className="bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">{row.round}</span></Cell>
+              <Cell className={`${COL.NUM} font-mono text-xs font-medium text-gray-700`}>{row.amountRaising}</Cell>
+              <Cell className={`${COL.NUM} font-mono text-xs text-gray-400`}>{row.valuation}</Cell>
+              <Cell className={COL.STATUS}>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                  row.status === 'active' ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/10' :
+                  row.status === 'exited' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                  'bg-gray-50 text-gray-500 border border-gray-100'
+                }`}>
+                  {row.status}
+                </span>
+              </Cell>
+              <Cell className={`${COL.TEXT_MD} text-gray-600 text-xs`}>{row.dealLead}</Cell>
               <Cell className={`${COL.DATE} text-gray-500`}>
                  <div className="flex items-center gap-2 text-xs">
                     <Calendar size={12} className="text-gray-400"/>
-                    {new Date(row.dateAccepted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    {new Date(row.dateAdded).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                  </div>
               </Cell>
-              <Cell className={`${COL.TEXT_XL}`}>
-                 <ExpandableContent content={typeof row.context === 'string' ? row.context : JSON.stringify(row.context)} widthClass={COL.TEXT_XL} />
+              <Cell className={`${COL.TEXT_LG}`}>
+                 <ExpandableContent content={row.summary} widthClass={COL.TEXT_LG} />
+              </Cell>
+              <Cell className={`${COL.TEXT_LG}`}>
+                 <ExpandableContent content={row.notes} widthClass={COL.TEXT_LG} />
+              </Cell>
+              <Cell className={`${COL.TEXT_LG}`}>
+                 <ExpandableContent content={row.nextAction} widthClass={COL.TEXT_LG} />
+              </Cell>
+              <Cell className={`${COL.DATE} text-gray-500`}>
+                 <div className="flex items-center gap-2 text-xs">
+                    <Calendar size={12} className="text-gray-400"/>
+                    {row.reminderDate ? new Date(row.reminderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                 </div>
               </Cell>
               <Cell className={`${COL.NUM} text-gray-300 font-mono text-xs`}>{row.applicationId}</Cell>
             </tr>

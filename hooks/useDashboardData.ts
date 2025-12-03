@@ -25,7 +25,11 @@ export const useDashboardData = () => {
            api.fetchMeetings()
         ]);
 
-        if (apps.status === 'fulfilled') setApplications(apps.value);
+        if (apps.status === 'fulfilled') {
+          setApplications(apps.value);
+          console.log(applications)
+
+        }
         if (sts.status === 'fulfilled') setStartups(sts.value);
         if (mts.status === 'fulfilled') setMeetings(mts.value);
 

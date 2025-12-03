@@ -1,40 +1,51 @@
 
 export interface ApplicationData {
+
+
+
   id: string;
-  // Core CRM
   companyName: string;
   industry: string;
   location: string;
   founderName: string;
   founderContact: string;
-  roundType: string;
-  amountRaising: string;
-  valuation: string;
-  stage: string;
-  dealLeadVCId: string;
   dateAdded: string;
-  source: string;
-  description: string;
   pitchDeckPath: string;
   keyInsight: string;
-  previousKeyInsight?: string; // For diff view
-  reminders: string;
-  dueDiligenceSummary: string;
-  // Workflow
+  email: string;
+  startupDescription: string;
+  QnA: Record<string, any>;
   status: 'pending' | 'accepted' | 'rejected';
-  // Timestamps
   createdAt: string;
   updatedAt: string;
+  
 }
 
 export interface StartupData {
   // Derived from StartupCreate schema
+
+  
   id: string;
   applicationId: string;
   companyName: string;
-  dateAccepted: string;
-  context: string | Record<string, any>;
-  previousContext?: string; 
+  industry: string;
+  location: string;
+  founderName: string;
+  founderContact: string;
+  round: string;
+  amountRaising: string;
+  valuation: string;
+  status: string;
+  dealLead: string;
+  dateAdded: string;
+  source: string;
+  summary: string;
+  notes: string;
+  nextAction: string;
+  reminderDate: string;
+  vc_notes: string;
+  dueDiligenceSummary: string;
+
 }
 
 export interface TranscriptChunk {

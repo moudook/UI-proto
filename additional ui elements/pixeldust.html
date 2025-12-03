@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel dust</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* Changed to a clean, off-white background matching the image */
+            background-color: #F8F9FB; 
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: sans-serif;
+        }
+
+        canvas {
+            display: block;
+            /* Replaced the heavy glow with a subtle, modern UI shadow */
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            background-color: #ffffff; /* Canvas background acts as the container */
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="neoGrid"></canvas>
+
+    <script>
+        /**
+         * NEOGRID v7: UI REFINED
+         * Logic remains identical. Aesthetics updated to match "Investment Preferences" UI.
+         */
+        const CONFIG = {
+            // GEOMETRY
+            cellSize: 36,       // Slightly larger to match the 'tag' look
+            gap: 12,            // Increased gap for cleaner separation
+            cornerRadius: 10,   // More rounded to match the buttons in the image
+            lineWidth: 1.5,     // Thickness of the borders
+
+            // COLORS (Matched from the Reference Image)
+            
+            // Inactive: Looks like the unselected tags (White background, light gray border)
+            inactiveFill: '#FFFFFF',
+            inactiveStroke: '#E2E8F0', 
+            
+            // Active: Looks like the "Custom" or "Marketplace" tag (Light Blue fill, Stronger Blue border)
+            activeFill: '#EFF6FF',      // Very light blue
+            activeStroke: '#3B82F6',    // Vibrant UI Blue
+
+            // SPEED SETTINGS (Unchanged)
+            spawnRate: 0.002,   
+            minLife: 180,       
+            maxLife: 600,       
+
+            initialDensity: 0.15
+        };
+
+        const canvas = document.getElementById('neoGrid');
+        const ctx = canvas.getContext('2d');
+
+        let cols, rows;
+        let grid = [];
+
+        class Cell {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.isActive = false;
+                this.lifeTimer = 0;
+
+                if (Math.random() < CONFIG.initialDensity) {
+                    this.ignite();
+                }
+            }
+
+            ignite() {
+                this.isActive = true;
+                this.lifeTimer = Math.floor(Math.random() * (CONFIG.maxLife - CONFIG.minLife + 1)) + CONFIG.minLife;
+            }
+
+            update() {
+                if (this.isActive) {
+                    this.lifeTimer--;
+                    if (this.lifeTimer <= 0) {
+                        this.isActive = false;
+                    }
+                } else {
+                    if (Math.random() < CONFIG.spawnRate) {
+                        this.ignite();
+                    }
+                }
+            }
+
+            draw() {
+                const posX = this.x * (CONFIG.cellSize + CONFIG.gap) + (CONFIG.gap / 2); // Centered offset
+                const posY = this.y * (CONFIG.cellSize + CONFIG.gap) + (CONFIG.gap / 2);
+
+                // Set styles based on state
+                if (this.isActive) {
+                    ctx.fillStyle = CONFIG.activeFill;
+                    ctx.strokeStyle = CONFIG.activeStroke;
+                } else {
+                    ctx.fillStyle = CONFIG.inactiveFill;
+                    ctx.strokeStyle = CONFIG.inactiveStroke;
+                }
+
+                ctx.lineWidth = CONFIG.lineWidth;
+
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(posX, posY, CONFIG.cellSize, CONFIG.cellSize, CONFIG.cornerRadius);
+                } else {
+                    ctx.rect(posX, posY, CONFIG.cellSize, CONFIG.cellSize);
+                }
+                
+                // Draw Fill first, then Border (Stroke)
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function init() {
+            resize();
+            window.addEventListener('resize', resize);
+            animate();
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            cols = Math.ceil(canvas.width / (CONFIG.cellSize + CONFIG.gap));
+            rows = Math.ceil(canvas.height / (CONFIG.cellSize + CONFIG.gap));
+
+            createGrid();
+        }
+
+        function createGrid() {
+            grid = [];
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    grid.push(new Cell(x, y));
+                }
+            }
+        }
+
+        function animate() {
+            // Clear background to match the container
+            ctx.fillStyle = '#F8F9FB'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            grid.forEach(cell => {
+                cell.update();
+                cell.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Polyfill
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

@@ -16,11 +16,20 @@ export default defineConfig(({ mode }) => {
         strictPort: true, // Don't try other ports if 3000 is in use
         host: '0.0.0.0',
         open: false,
+        proxy: {
+          '/api': {
+            target: 'http://localhost:8000',
+            changeOrigin: true,
+            secure: false,
+          }
+        }
       },
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.INTERNAL_API_KEY': JSON.stringify(env.INTERNAL_API_KEY),
+        'process.env.JWT_TOKEN': JSON.stringify(env.JWT_TOKEN)
       },
       resolve: {
         alias: {

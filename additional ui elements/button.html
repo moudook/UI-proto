@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Preferences</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #F8F9FB;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            /* Bottom padding ensures content isn't hidden behind the fixed buttons */
+            padding: 40px 20px 120px 20px; 
+            box-sizing: border-box;
+            color: #1f2937;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .title {
+            color: #111827;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 800px;
+            height: 8px;
+            background-color: #E5E7EB;
+            border-radius: 4px;
+            margin-bottom: 50px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2b65d9, #4f8aff);
+            border-radius: 4px;
+            width: 25%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- Container for Horizontal Layout --- */
+        .container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            max-width: 800px;
+        }
+
+        /* --- Base Badge Styles --- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            width: fit-content;
+            border-radius: 24px;
+            border-width: 1px;
+            border-style: solid;
+            font-size: 16px;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background-size: 200% 200%;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .badge:active {
+            transform: scale(0.96);
+        }
+
+        .badge.is-filled {
+            animation: gradientAnimation 4s ease infinite;
+            border-color: transparent;
+        }
+        
+        .badge.yellow.is-filled { color: #744210; }
+        .badge.blue.is-filled { color: #1e3a8a; }
+        .badge.green.is-filled { color: #14532d; }
+        .badge.red.is-filled { color: #7f1d1d; }
+        .badge.gray.is-filled { color: #1f2937; }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .badge svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.2;
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .badge.is-filled svg {
+            fill: currentColor;
+            stroke: none;
+        }
+
+        .badge-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: currentColor;
+            width: 80px; 
+            transition: width 0.2s;
+        }
+        
+        .badge-input::placeholder {
+            color: currentColor;
+            opacity: 0.6;
+        }
+
+        /* --- Color Definitions --- */
+        .badge.yellow { color: #d97706; border-color: #fcd34d; background-color: #fffbeb; }
+        .badge.yellow.is-filled { background-image: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%); border-color: transparent; }
+
+        .badge.blue { color: #2563eb; border-color: #bfdbfe; background-color: #eff6ff; }
+        .badge.blue.is-filled { background-image: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%); border-color: transparent; }
+
+        .badge.green { color: #16a34a; border-color: #bbf7d0; background-color: #f0fdf4; }
+        .badge.green.is-filled { background-image: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%); border-color: transparent; }
+
+        .badge.red { color: #dc2626; border-color: #fecaca; background-color: #fef2f2; }
+        .badge.red.is-filled { background-image: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); border-color: transparent; }
+
+        .badge.gray { color: #4b5563; border-color: #e5e7eb; background-color: #f9fafb; }
+        .badge.gray.is-filled { background-image: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%); border-color: transparent; }
+
+        /* --- TEXT INPUT STYLES --- */
+        .text-input-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; margin-bottom: 8px; font-weight: 600; color: #374151; font-size: 15px; }
+        
+        .text-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            background-color: #f9fafb;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #2b65d9;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(43, 101, 217, 0.1);
+        }
+
+        .text-area { min-height: 140px; resize: vertical; line-height: 1.6; }
+        .input-hint { margin-top: 8px; font-size: 13px; color: #9ca3af; }
+
+        /* --- TAG INPUT STYLES --- */
+        .tag-page-description { text-align: center; color: #6B7280; margin-bottom: 24px; font-size: 16px; }
+
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #FFFFFF;
+            border: 2px solid #E5E7EB;
+            border-radius: 16px;
+            min-height: 60px;
+            cursor: text;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .tag-input-container:focus-within {
+            border-color: #2b65d9;
+            box-shadow: 0 8px 20px rgba(43, 101, 217, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .tag-input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            min-width: 150px;
+            font-size: 16px;
+            line-height: 1.5;
+            font-family: 'Inter', sans-serif;
+            background: transparent;
+            color: #111827;
+            padding: 4px 0;
+        }
+
+        .tag-input-field::placeholder { color: #9CA3AF; font-weight: 400; }
+
+        .enter-hint {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9CA3AF;
+            background-color: #F3F4F6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.2s ease;
+        }
+
+        .tag-input-container:focus-within .enter-hint.visible { opacity: 1; transform: translateX(0); }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            animation: tagPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes tagPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.5);
+            transition: background 0.2s;
+        }
+
+        .tag-remove:hover { background-color: #2b65d9; color: white; }
+        .tag-remove svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.5; }
+
+        /* --- UPDATED NAVIGATION BUTTONS (Fixed Bottom, No Panel) --- */
+        .nav-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 30px; /* Distance from bottom */
+            background: transparent; /* No panel */
+            z-index: 1000;
+            pointer-events: none; /* Allows clicking content behind the invisible container */
+        }
+
+        .nav-button {
+            pointer-events: auto; /* Re-enable clicks on the buttons */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 32px; 
+            border-radius: 30px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15); /* Stronger shadow for floating elements */
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .nav-button:active {
+            transform: scale(0.96);
+        }
+
+        /* "Continue" Button -> Styles exactly like the Blue Badge (Filled) */
+        .nav-button:not(.back) {
+            background-image: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            color: #1e3a8a;
+            animation: gradientAnimation 4s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        /* "Back" Button -> Styles exactly like the Gray Badge (Filled) */
+        .nav-button.back {
+            background-image: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            color: #4b5563;
+        }
+
+        .nav-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1 class="title">Investment Preferences</h1>
+        <p class="subtitle" id="page-subtitle">Loading...</p>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div id="content-container">
+        <!-- Content will be dynamically loaded here -->
+    </div>
+
+    <div class="nav-buttons" id="nav-buttons">
+        <!-- Navigation buttons will be dynamically loaded here -->
+    </div>
+
+    <script>
+        // --- CONSTANTS ---
+        const BADGE_COLORS = ['yellow', 'blue', 'green', 'red', 'gray'];
+        
+        const ICONS = {
+            outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+            filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+        };
+
+        const PREFERENCE_PAGES = [
+            {
+                id: 'domain',
+                type: 'badges',
+                title: 'Select your domain preferences',
+                allowCustom: true, 
+                options: [
+                    { id: 'b2b', text: 'B2B' },
+                    { id: 'b2c', text: 'B2C' },
+                    { id: 'd2c', text: 'D2C' },
+                    { id: 'marketplace', text: 'Marketplace' },
+                    { id: 'saas', text: 'SaaS' },
+                    { id: 'infra', text: 'Infra' },
+                    { id: 'deep-tech', text: 'Deep-tech' },
+                    { id: 'fintech', text: 'Fintech rails' },
+                    { id: 'dev-tools', text: 'Dev-tools' }
+                ]
+            },
+            {
+                id: 'stage',
+                type: 'badges',
+                title: 'Select your stage mandate',
+                allowCustom: true,
+                options: [
+                    { id: 'pre-seed', text: 'Pre-seed' },
+                    { id: 'seed', text: 'Seed' },
+                    { id: 'series-a', text: 'Series A' },
+                    { id: 'series-b', text: 'Series B' },
+                    { id: 'growth', text: 'Growth' }
+                ]
+            },
+            {
+                id: 'sub-sector',
+                type: 'tags',
+                title: 'Sub-sector filters',
+                description: 'Specific themes inside the domain the fund prioritizes',
+                placeholder: 'Type a theme...'
+            },
+            {
+                id: 'investment-size',
+                type: 'badges',
+                title: 'Select your preferred investment size',
+                allowCustom: true,
+                options: [
+                    { id: 'under-100k', text: 'Under $100K' },
+                    { id: '100k-500k', text: '$100K - $500K' },
+                    { id: '500k-1m', text: '$500K - $1M' },
+                    { id: '1m-5m', text: '$1M - $5M' },
+                    { id: 'over-5m', text: 'Over $5M' }
+                ]
+            },
+            {
+                id: 'thesis-notes',
+                type: 'text',
+                title: 'Investment Thesis & Notes',
+                description: 'Add any specific notes about your investment strategy.',
+                fields: [
+                    { 
+                        id: 'thesis', 
+                        type: 'textarea', 
+                        label: 'Investment Thesis', 
+                        placeholder: 'Describe your core investment philosophy...', 
+                        hint: 'This helps startups understand your focus.'
+                    },
+                    { 
+                        id: 'fund-url', 
+                        type: 'text', 
+                        label: 'Fund Website (Optional)', 
+                        placeholder: 'https://example.com' 
+                    }
+                ]
+            }
+        ];
+
+        // --- STATE ---
+        let currentPageIndex = 0;
+        const userSelections = {};
+
+        // --- UTILS ---
+        function getNextColor(excludeColor) {
+            const available = excludeColor 
+                ? BADGE_COLORS.filter(c => c !== excludeColor) 
+                : BADGE_COLORS;
+            return available[Math.floor(Math.random() * available.length)];
+        }
+
+        // --- MAIN INITIALIZATION ---
+        function initializePage() {
+            const currentPage = PREFERENCE_PAGES[currentPageIndex];
+
+            // Update Header & Progress
+            document.getElementById('page-subtitle').textContent = currentPage.title;
+            document.getElementById('progress-bar').style.width = `${((currentPageIndex + 1) / PREFERENCE_PAGES.length) * 100}%`;
+
+            const container = document.getElementById('content-container');
+            container.innerHTML = ''; 
+
+            const fragment = document.createDocumentFragment();
+
+            if (currentPage.type === 'badges') {
+                renderBadgePage(fragment, currentPage);
+            } else if (currentPage.type === 'tags') {
+                renderTagPage(fragment, currentPage);
+            } else if (currentPage.type === 'text') {
+                renderTextPage(fragment, currentPage);
+            }
+
+            container.appendChild(fragment);
+            updateNavigationButtons();
+        }
+
+        // --- RENDERERS ---
+
+        function renderBadgePage(parent, page) {
+            const badgeContainer = document.createElement('div');
+            badgeContainer.className = 'container';
+            
+            const savedSelections = userSelections[page.id] || [];
+            const standardIds = new Set(page.options.map(opt => opt.id));
+            
+            if (page.allowCustom) {
+                const customValues = savedSelections.filter(id => !standardIds.has(id));
+                customValues.forEach(val => {
+                    createCustomBadge(badgeContainer, val, true);
+                });
+                createCustomBadge(badgeContainer, '', false);
+            }
+
+            let lastColor = null;
+            const savedStandardSet = new Set(savedSelections);
+
+            page.options.forEach(option => {
+                const color = getNextColor(lastColor);
+                lastColor = color;
+                
+                const badge = document.createElement('div');
+                badge.className = `badge ${color} standard-badge`;
+                badge.setAttribute('data-id', option.id);
+                badge.setAttribute('data-color', color);
+                
+                if (savedStandardSet.has(option.id)) {
+                    badge.classList.add('is-filled');
+                    badge.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.filled}</svg><span>${option.text}</span>`;
+                } else {
+                    badge.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.outline}</svg><span>${option.text}</span>`;
+                }
+
+                badge.onclick = () => toggleStandardSelection(badge);
+                badgeContainer.appendChild(badge);
+            });
+
+            parent.appendChild(badgeContainer);
+        }
+
+        function createCustomBadge(container, value = '', isSelected = false) {
+            const randomColor = getNextColor();
+            
+            const customBadge = document.createElement('div');
+            customBadge.className = `badge ${randomColor} custom-badge-wrapper`;
+            customBadge.setAttribute('data-is-custom', 'true');
+            
+            if (isSelected) customBadge.classList.add('is-filled');
+
+            customBadge.innerHTML = `
+                <svg viewBox="0 0 24 24">${isSelected ? ICONS.filled : ICONS.outline}</svg>
+                <input type="text" class="badge-input" placeholder="Custom" value="${value}" />
+            `;
+
+            const input = customBadge.querySelector('input');
+            const svg = customBadge.querySelector('svg');
+
+            input.style.width = Math.max(80, input.value.length * 9) + 'px';
+
+            customBadge.onclick = (e) => {
+                const hasText = input.value.trim().length > 0;
+                if (!hasText) {
+                    input.focus();
+                } else {
+                    if (customBadge.classList.contains('is-filled')) {
+                        customBadge.classList.remove('is-filled');
+                        svg.innerHTML = ICONS.outline;
+                    } else {
+                        customBadge.classList.add('is-filled');
+                        svg.innerHTML = ICONS.filled;
+                    }
+                }
+            };
+
+            input.onclick = (e) => { e.stopPropagation(); };
+
+            input.addEventListener('input', () => {
+                input.style.width = Math.max(80, input.value.length * 9) + 'px';
+                const val = input.value.trim();
+                const hasText = val.length > 0;
+
+                if (hasText && !customBadge.classList.contains('is-filled') && !customBadge.dataset.wasUnchecked) {
+                    customBadge.classList.add('is-filled');
+                    svg.innerHTML = ICONS.filled;
+                } else if (!hasText) {
+                    customBadge.classList.remove('is-filled');
+                    svg.innerHTML = ICONS.outline;
+                    delete customBadge.dataset.wasUnchecked;
+                }
+
+                if (hasText) {
+                    const allCustom = container.querySelectorAll('.custom-badge-wrapper');
+                    if (allCustom[allCustom.length - 1] === customBadge) {
+                        createCustomBadge(container, '');
+                    }
+                }
+
+                if (!hasText) {
+                    const allCustom = Array.from(container.querySelectorAll('.custom-badge-wrapper'));
+                    const emptyCustoms = allCustom.filter(b => b.querySelector('input').value.trim() === '');
+
+                    if (emptyCustoms.length > 1) {
+                        emptyCustoms.forEach(badge => {
+                            if (badge !== customBadge) {
+                                badge.remove();
+                            }
+                        });
+                    }
+                }
+            });
+
+            const firstStandard = container.querySelector('.standard-badge');
+            if (firstStandard) {
+                container.insertBefore(customBadge, firstStandard);
+            } else {
+                container.appendChild(customBadge);
+            }
+        }
+
+        function renderTagPage(parent, page) {
+            const textContainer = document.createElement('div');
+            textContainer.className = 'text-input-container'; 
+            
+            if (page.description) {
+                const desc = document.createElement('p');
+                desc.className = 'tag-page-description';
+                desc.textContent = page.description;
+                textContainer.appendChild(desc);
+            }
+
+            const tagContainer = document.createElement('div');
+            tagContainer.className = 'tag-input-container';
+            tagContainer.id = 'tag-input-container';
+            
+
+            const inputField = document.createElement('input');
+            inputField.className = 'tag-input-field';
+            inputField.id = 'tag-input-field';
+            inputField.type = 'text';
+            inputField.placeholder = page.placeholder || 'Add a theme...';
+
+            const enterHint = document.createElement('span');
+            enterHint.className = 'enter-hint';
+            enterHint.textContent = '↵ Enter';
+            tagContainer.appendChild(enterHint);
+
+            inputField.addEventListener('input', () => {
+                if (inputField.value.trim().length > 0) {
+                    enterHint.classList.add('visible');
+                } else {
+                    enterHint.classList.remove('visible');
+                }
+            });
+
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = inputField.value.trim();
+                    if (value) {
+                        addTag(tagContainer, value, inputField);
+                        inputField.value = '';
+                        enterHint.classList.remove('visible');
+                    }
+                }
+                if (e.key === 'Backspace' && inputField.value === '') {
+                    const tags = tagContainer.querySelectorAll('.tag');
+                    if(tags.length > 0) {
+                        tags[tags.length - 1].remove();
+                    }
+                }
+            });
+
+            tagContainer.onclick = (e) => {
+                if(e.target === tagContainer) inputField.focus();
+            };
+
+            const savedTags = userSelections[page.id] || [];
+            savedTags.forEach(tag => addTag(tagContainer, tag, inputField));
+
+            tagContainer.insertBefore(inputField, enterHint);
+
+            textContainer.appendChild(tagContainer);
+            parent.appendChild(textContainer);
+        }
+
+        function renderTextPage(parent, page) {
+            const textContainer = document.createElement('div');
+            textContainer.className = 'text-input-container';
+
+            if (page.description) {
+                const desc = document.createElement('p');
+                desc.textContent = page.description;
+                desc.style.marginBottom = '24px';
+                desc.style.color = '#6b7280';
+                textContainer.appendChild(desc);
+            }
+
+            const savedData = userSelections[page.id] || {};
+
+            page.fields.forEach(field => {
+                const group = document.createElement('div');
+                group.className = 'input-group';
+
+                if (field.label) {
+                    const label = document.createElement('label');
+                    label.className = 'input-label';
+                    label.textContent = field.label;
+                    label.htmlFor = field.id;
+                    group.appendChild(label);
+                }
+
+                const isTextArea = field.type === 'textarea';
+                const input = document.createElement(isTextArea ? 'textarea' : 'input');
+                input.className = `text-input ${isTextArea ? 'text-area' : ''}`;
+                input.id = field.id;
+                input.placeholder = field.placeholder || '';
+                if (!isTextArea) input.type = 'text';
+                
+                if (savedData[field.id]) input.value = savedData[field.id];
+
+                group.appendChild(input);
+
+                if (field.hint) {
+                    const hint = document.createElement('p');
+                    hint.className = 'input-hint';
+                    hint.textContent = field.hint;
+                    group.appendChild(hint);
+                }
+
+                textContainer.appendChild(group);
+            });
+
+            parent.appendChild(textContainer);
+        }
+
+        // --- INTERACTION LOGIC ---
+
+        function addTag(container, text, inputRef) {
+            const currentTags = Array.from(container.querySelectorAll('.tag span:first-child'))
+                                     .map(span => span.textContent);
+            if (currentTags.includes(text)) return;
+
+            const tag = document.createElement('div');
+            tag.className = `tag`; 
+            tag.innerHTML = `
+                <span>${text}</span>
+                <span class="tag-remove">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </span>
+            `;
+
+            tag.querySelector('.tag-remove').onclick = () => tag.remove();
+            container.insertBefore(tag, inputRef);
+        }
+
+        function toggleStandardSelection(badge) {
+            const id = badge.getAttribute('data-id');
+            const pageId = PREFERENCE_PAGES[currentPageIndex].id;
+            
+            if (!userSelections[pageId]) userSelections[pageId] = [];
+
+            if (badge.classList.contains('is-filled')) {
+                badge.classList.remove('is-filled');
+                badge.querySelector('svg').innerHTML = ICONS.outline;
+                userSelections[pageId] = userSelections[pageId].filter(itemId => itemId !== id);
+            } else {
+                badge.classList.add('is-filled');
+                badge.querySelector('svg').innerHTML = ICONS.filled;
+                userSelections[pageId].push(id);
+            }
+        }
+
+        // --- NAVIGATION & SAVING ---
+
+        function updateNavigationButtons() {
+            const navContainer = document.getElementById('nav-buttons');
+            navContainer.innerHTML = '';
+            
+            const isFirst = currentPageIndex === 0;
+            const isLast = currentPageIndex === PREFERENCE_PAGES.length - 1;
+
+            if (!isFirst) {
+                const btn = createNavButton('Back', 'back');
+                btn.onclick = () => { saveCurrentPageData(); currentPageIndex--; initializePage(); };
+                btn.prepend(createNavIcon('left'));
+                navContainer.appendChild(btn);
+            }
+
+            if (!isLast) {
+                const btn = createNavButton('Continue', '');
+                btn.onclick = () => { saveCurrentPageData(); currentPageIndex++; initializePage(); };
+                btn.append(createNavIcon('right'));
+                navContainer.appendChild(btn);
+            } else {
+                const btn = createNavButton('Submit Preferences', '');
+                btn.onclick = submitPreferences;
+                btn.append(createNavIcon('submit'));
+                navContainer.appendChild(btn);
+            }
+        }
+
+        function createNavButton(text, extraClass) {
+            const btn = document.createElement('button');
+            btn.className = `nav-button ${extraClass}`.trim();
+            btn.textContent = text;
+            return btn;
+        }
+
+        function createNavIcon(type) {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 24 24");
+            if (type === 'left') {
+                svg.innerHTML = '<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 5 5 12 12 19"></polyline>';
+            } else if (type === 'right') {
+                svg.innerHTML = '<line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>';
+            } else if (type === 'submit') {
+                svg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+            }
+            return svg;
+        }
+
+        function saveCurrentPageData() {
+            const page = PREFERENCE_PAGES[currentPageIndex];
+
+            if (page.type === 'badges') {
+                const container = document.getElementById('content-container');
+                const selections = [];
+
+                container.querySelectorAll('.standard-badge.is-filled').forEach(badge => {
+                    selections.push(badge.getAttribute('data-id'));
+                });
+
+                if (page.allowCustom) {
+                    container.querySelectorAll('.custom-badge-wrapper').forEach(badgeWrapper => {
+                        const input = badgeWrapper.querySelector('input');
+                        const val = input.value.trim();
+                        if (val && badgeWrapper.classList.contains('is-filled')) {
+                            selections.push(val);
+                        }
+                    });
+                }
+                userSelections[page.id] = selections;
+            } 
+            else if (page.type === 'tags') {
+                const container = document.getElementById('tag-input-container');
+                if (container) {
+                    const tags = Array.from(container.querySelectorAll('.tag span:first-child'))
+                                      .map(span => span.textContent.trim());
+                    userSelections[page.id] = tags;
+                }
+            } 
+            else if (page.type === 'text') {
+                const data = {};
+                page.fields.forEach(field => {
+                    const el = document.getElementById(field.id);
+                    if (el) data[field.id] = el.value;
+                });
+                userSelections[page.id] = data;
+            }
+        }
+
+        function submitPreferences() {
+            saveCurrentPageData();
+            console.log('Final Selections:', userSelections);
+            alert('Preferences Submitted!\n\nCheck console for full JSON object.');
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

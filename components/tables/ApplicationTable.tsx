@@ -2,7 +2,7 @@
 import React from 'react';
 import { ApplicationData } from '../../types';
 import { ChevronDown, MoreHorizontal, Building2, MapPin } from 'lucide-react';
-import { COL, HeaderCell, Cell, ExpandableContent } from './Shared';
+import { COL, HeaderCell, Cell, ExpandableContent, QnAExpandable } from './Shared';
 
 interface ApplicationTableProps {
   data: ApplicationData[];
@@ -27,12 +27,12 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
             <HeaderCell width={COL.STATUS}>Status</HeaderCell>
             <HeaderCell width={COL.TEXT_MD}>Location</HeaderCell>
             <HeaderCell width={COL.TEXT_MD}>Founder</HeaderCell>
-            <HeaderCell width={COL.NUM}>Round</HeaderCell>
-            <HeaderCell width={COL.NUM}>Amount</HeaderCell>
-            <HeaderCell width={COL.NUM}>Valuation</HeaderCell>
-            <HeaderCell width={COL.STATUS}>Stage</HeaderCell>
-            <HeaderCell width={COL.TEXT_LG}>Description</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Contact</HeaderCell>
+            <HeaderCell width={COL.TEXT_MD}>Email</HeaderCell>
+            <HeaderCell width={COL.DATE}>Date Added</HeaderCell>
+            <HeaderCell width={COL.TEXT_LG}>Startup Description</HeaderCell>
             <HeaderCell width={COL.TEXT_LG}>Key Insight</HeaderCell>
+            <HeaderCell width={COL.TEXT_XL}>Q&A</HeaderCell>
             <HeaderCell width={COL.ACTION}></HeaderCell>
           </tr>
         </thead>
@@ -60,20 +60,23 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
               
               <Cell className={COL.STATUS}>
                 <div className="relative">
-                    <select 
+                    <select
                     value={row.status}
                     onChange={(e) => onStatusChange && onStatusChange(row.id, e.target.value)}
-                    className={`appearance-none pl-4 pr-8 py-2 text-sm font-bold rounded-lg border-0 cursor-pointer focus:ring-0 w-full ${
-                        row.status === 'accepted' ? 'text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/50' : 
-                        row.status === 'rejected' ? 'text-rose-700 bg-rose-50/50 hover:bg-rose-100/50' : 
-                        'text-amber-700 bg-amber-50/50 hover:bg-amber-100/50'
+                    disabled={row.status === 'rejected' || row.status === 'accepted'}
+                    className={`appearance-none pl-4 pr-8 py-2 text-sm font-bold rounded-lg border-0 focus:ring-0 w-full ${
+                        row.status === 'rejected'
+                            ? 'text-rose-700 bg-rose-50/50 cursor-not-allowed opacity-60'
+                            : row.status === 'accepted'
+                            ? 'text-emerald-700 bg-emerald-50/50 cursor-not-allowed opacity-60'
+                            : 'text-amber-700 bg-amber-50/50 hover:bg-amber-100/50 cursor-pointer'
                     }`}
                     >
                     <option value="pending">Pending</option>
                     <option value="accepted">Accepted</option>
                     <option value="rejected">Rejected</option>
                     </select>
-                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-50`} />
+                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${(row.status === 'rejected' || row.status === 'accepted') ? 'opacity-30' : 'opacity-50'}`} />
                 </div>
               </Cell>
 
@@ -91,17 +94,24 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({ data, onName
                    <span className="text-gray-700">{row.founderName}</span>
                 </div>
               </Cell>
-              <Cell className={COL.NUM}><span className="bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-md text-sm font-medium text-gray-600">{row.roundType}</span></Cell>
-              <Cell className={`${COL.NUM} font-mono text-base font-medium text-gray-700`}>{row.amountRaising}</Cell>
-              <Cell className={`${COL.NUM} font-mono text-base text-gray-400`}>{row.valuation}</Cell>
-              <Cell className={COL.STATUS}><span className="text-xs font-semibold text-indigo-600 tracking-wide uppercase">{row.stage}</span></Cell>
-              
+              <Cell className={`${COL.TEXT_MD} text-gray-500 text-sm`}>{row.founderContact}</Cell>
+              <Cell className={`${COL.TEXT_MD} text-gray-500 text-sm`}>{row.email}</Cell>
+              <Cell className={`${COL.DATE} text-gray-500`}>
+                 <div className="flex items-center gap-2 text-sm">
+                    {new Date(row.dateAdded).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                 </div>
+              </Cell>
+
               <Cell className={`${COL.TEXT_LG}`}>
-                  <ExpandableContent content={row.description} widthClass={COL.TEXT_LG}/>
+                  <ExpandableContent content={row.startupDescription} widthClass={COL.TEXT_LG}/>
               </Cell>
               
               <Cell className={`${COL.TEXT_LG}`}>
                 <ExpandableContent content={row.keyInsight} widthClass={COL.TEXT_LG} />
+              </Cell>
+
+              <Cell className={`${COL.TEXT_XL}`}>
+                <QnAExpandable qnaData={row.QnA} widthClass={COL.TEXT_XL} />
               </Cell>
 
               <Cell className={`${COL.ACTION} text-right`}>

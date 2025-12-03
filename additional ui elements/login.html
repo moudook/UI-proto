@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup Page UI</title>
+    <!-- Importing Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Importing FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            width: 1000px;
+            max-width: 100%;
+            min-height: 650px;
+            height: auto;
+            background: #fff;
+            border-radius: 50px;
+            overflow: hidden;
+            padding: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Left Section --- */
+        .left-section {
+            flex: 1;
+            background: white;
+            position: relative;
+            border-radius: 50px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #333;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .left-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: rgba(83, 109, 254, 0.1);
+            filter: blur(80px);
+            opacity: 0.6;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .left-section::after {
+            content: '';
+            position: absolute;
+            bottom: 50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(83, 109, 254, 0.1);
+            filter: blur(60px);
+            opacity: 0.8;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 3;
+        }
+
+        .left-section h1 {
+            font-size: 42px;
+            line-height: 1.2;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .partners-section {
+            position: relative;
+            z-index: 3;
+        }
+
+        .partners-section p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+            color: #333;
+        }
+
+        .partners-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .partners-icons i {
+            font-size: 20px;
+            opacity: 0.8;
+            color: #333;
+        }
+
+        /* Loader */
+        .loader-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            filter: blur(40px);
+        }
+
+        .flower-loader {
+            overflow: hidden;
+            position: relative;
+            text-indent: -9999px;
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background: rgb(59, 79, 207);
+            border-radius: 100%;
+            box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            animation: flower-loader 20s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes flower-loader {
+            0% { transform: rotate(0deg) scale(1); box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px; }
+            25% { transform: rotate(540deg) scale(1.1); box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px; }
+            50% { transform: rotate(1080deg) scale(1); box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px; }
+            75% { transform: rotate(1620deg) scale(0.9); box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px; }
+            100% { transform: rotate(2160deg) scale(1); box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px; }
+        }
+
+        /* --- Right Section (Form) --- */
+        .right-section {
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100%;
+        }
+
+        .right-section h2 {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .sub-text {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 100px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #536dfe;
+        }
+
+        /* --- NEW ERROR STYLES START --- */
+        
+        .error-message {
+            display: none !important;
+        }
+
+        /* Keyframes for Blue Ripple (#536DFE is rgb(83, 109, 254)) */
+        @keyframes blue-ripple-flicker {
+            0% {
+                border-color: #536dfe;
+                /* Visible sharp blue shadow */
+                box-shadow: 0 0 0 0 rgba(83, 109, 254, 0.8);
+            }
+            50% {
+                border-color: #3730a3; /* Slightly darker blue during pulse */
+                /* Shadow expands and fades */
+                box-shadow: 0 0 10px 4px rgba(83, 109, 254, 0);
+            }
+            100% {
+                border-color: #536dfe;
+                /* Shadow gone */
+                box-shadow: 0 0 0 0 rgba(83, 109, 254, 0);
+            }
+        }
+
+        /* Error state for inputs */
+        .input-group input.error {
+            border-color: #536dfe;
+            /* 0.5s duration * 2 iterations = 1 second total */
+            animation: blue-ripple-flicker 0.5s ease-in-out 2; 
+        }
+
+        /* Error state for Checkbox Text/Container */
+        .checkbox-group.error {
+             /* 0.5s duration * 2 iterations = 1 second total */
+            animation: blue-ripple-flicker 0.5s ease-in-out 2;
+            border-radius: 5px; 
+            padding: 0 5px; 
+        }
+        
+        .checkbox-group.error label {
+            color: #536dfe; /* Make text blue */
+            font-weight: 600;
+        }
+
+        /* --- NEW ERROR STYLES END --- */
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-container i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .forgot-pass {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 12px;
+            color: #536dfe;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-container {
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            accent-color: #536dfe;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .checkbox-group a {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: #536dfe;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #3730a3;
+        }
+
+        .success-message {
+            display: none;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 100px;
+            font-size: 14px;
+        }
+
+        .auth-toggle {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .auth-toggle a {
+            color: #536dfe;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .signup-only {
+            display: none;
+        }
+
+        .login-only {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <div class="loader-container">
+                <span class="flower-loader">Loading…</span>
+            </div>
+
+            <div class="content-wrapper">
+                <h1>Speed up your work<br>with our Pathway App</h1>
+            </div>
+
+            <div class="partners-section">
+                <p>Used by</p>
+                <div class="partners-icons">
+                    <i class="fa-brands fa-google" aria-hidden="true"></i>
+                    <i class="fa-brands fa-youtube" aria-hidden="true"></i>
+                    <i class="fa-brands fa-google" aria-hidden="true"></i>
+                    <i class="fa-brands fa-youtube" aria-hidden="true"></i>
+                    <i class="fa-brands fa-google" aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <h2 id="formTitle">Welcome Back</h2>
+            <p class="sub-text" id="formSubtitle">Please log in to your account to continue.</p>
+
+            <form id="authForm" novalidate>
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Your Username" autocomplete="username">
+                </div>
+
+                <div class="input-group signup-only">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your Name" autocomplete="name">
+                </div>
+
+                <div class="input-group signup-only">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" placeholder="yourbusiness@mail.com" autocomplete="email">
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <a href="#" class="forgot-pass login-only" id="forgotPass">Forgot Password?</a>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="* * * * * * * *" autocomplete="current-password">
+                        <i class="fa-regular fa-eye" id="togglePassword"></i>
+                    </div>
+                </div>
+
+                <div class="checkbox-container signup-only">
+                    <div class="checkbox-group" id="termsGroup">
+                        <input type="checkbox" id="terms" name="terms">
+                        <label for="terms">I agree to the <a href="#" id="termsLink">Terms & Privacy</a></label>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="submitBtn">Log in</button>
+                <div class="success-message" id="successMessage">Authentication successful! Redirecting...</div>
+            </form>
+
+            <div class="auth-toggle">
+                <span id="toggleText">Don't have an account?</span>
+                <a href="#" id="toggleLink">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Form elements
+            const authForm = document.getElementById('authForm');
+            const usernameInput = document.getElementById('username');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const termsCheckbox = document.getElementById('terms');
+            const termsGroup = document.getElementById('termsGroup');
+            
+            const successMessage = document.getElementById('successMessage');
+            const formTitle = document.getElementById('formTitle');
+            const formSubtitle = document.getElementById('formSubtitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const toggleLink = document.getElementById('toggleLink');
+            const toggleText = document.getElementById('toggleText');
+            const togglePassword = document.getElementById('togglePassword');
+
+            let isLoginMode = true;
+            let errorTimeout; 
+
+            updateFormMode();
+
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+
+            toggleLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                isLoginMode = !isLoginMode;
+                updateFormMode();
+            });
+
+            function updateFormMode() {
+                if (isLoginMode) {
+                    formTitle.textContent = 'Welcome Back';
+                    formSubtitle.textContent = 'Please log in to your account to continue.';
+                    submitBtn.textContent = 'Log in';
+                    toggleText.textContent = "Don't have an account?";
+                    toggleLink.textContent = 'Sign up';
+                    passwordInput.setAttribute('autocomplete', 'current-password');
+                } else {
+                    formTitle.textContent = 'Create Account';
+                    formSubtitle.textContent = 'Please fill in your information to create an account.';
+                    submitBtn.textContent = 'Sign up';
+                    toggleText.textContent = 'Already have an account?';
+                    toggleLink.textContent = 'Log in';
+                    passwordInput.setAttribute('autocomplete', 'new-password');
+                }
+
+                document.querySelectorAll('.signup-only').forEach(el => {
+                    el.style.display = isLoginMode ? 'none' : 'block';
+                });
+                document.querySelectorAll('.login-only').forEach(el => {
+                    el.style.display = isLoginMode ? 'block' : 'none';
+                });
+
+                // Clear errors on mode switch
+                clearErrors(); 
+            }
+
+            function clearErrors() {
+                document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+                termsGroup.classList.remove('error');
+                successMessage.style.display = 'none';
+                
+                if (errorTimeout) clearTimeout(errorTimeout);
+            }
+
+            function triggerError(element) {
+                // Remove first to reset animation if clicked multiple times
+                element.classList.remove('error');
+                // Force reflow to restart animation
+                void element.offsetWidth; 
+                element.classList.add('error');
+            }
+
+            authForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                
+                if (errorTimeout) clearTimeout(errorTimeout);
+                
+                let isValid = true;
+                const errorsToTrigger = [];
+
+                // Validate Username
+                if (usernameInput.value.trim() === '') {
+                    errorsToTrigger.push(usernameInput);
+                    isValid = false;
+                }
+
+                if (!isLoginMode) {
+                    // Validate Name
+                    if (nameInput.value.trim() === '') {
+                        errorsToTrigger.push(nameInput);
+                        isValid = false;
+                    }
+                    // Validate Email
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailInput.value)) {
+                        errorsToTrigger.push(emailInput);
+                        isValid = false;
+                    }
+                    // Validate Terms
+                    if (!termsCheckbox.checked) {
+                        errorsToTrigger.push(termsGroup); 
+                        isValid = false;
+                    }
+                }
+
+                // Validate Password
+                if (passwordInput.value.length < 8) {
+                    errorsToTrigger.push(passwordInput);
+                    isValid = false;
+                }
+
+                // Apply error visual cues
+                if (!isValid) {
+                    errorsToTrigger.forEach(el => triggerError(el));
+                    
+                    // Remove error state after 1 second (Max animation time)
+                    errorTimeout = setTimeout(() => {
+                        errorsToTrigger.forEach(el => el.classList.remove('error'));
+                    }, 1000);
+                } else {
+                    // Success
+                    clearErrors();
+                    successMessage.style.display = 'block';
+                    setTimeout(() => {
+                        console.log(`Redirecting...`);
+                    }, 2000);
+                }
+            });
+
+            document.getElementById('forgotPass').addEventListener('click', (e) => e.preventDefault());
+            document.getElementById('termsLink').addEventListener('click', (e) => e.preventDefault());
+        });
+    </script>
+
+</body>
+
+</html>
