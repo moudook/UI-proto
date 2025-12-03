@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page UI</title>
+    <!-- Importing Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Importing FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 1000px;
+            height: 650px;
+            background: #fff;
+            border-radius: 50px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        /* --- Left Section (White with Blur Background) --- */
+        .left-section {
+            flex: 1;
+            background: white;
+            position: relative;
+            border-radius: 50px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #333;
+            overflow: hidden;
+        }
+
+        /* Abstract blurred shapes to mimic the background texture */
+        .left-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: rgba(83, 109, 254, 0.1);
+            filter: blur(80px);
+            opacity: 0.6;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .left-section::after {
+            content: '';
+            position: absolute;
+            bottom: 50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(83, 109, 254, 0.1);
+            filter: blur(60px);
+            opacity: 0.8;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 3;
+        }
+
+        .left-section h1 {
+            font-size: 42px;
+            line-height: 1.2;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .partners-section {
+            position: relative;
+            z-index: 3;
+        }
+
+        .partners-section p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+            color: #333;
+        }
+
+        .partners-icons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .partners-icons i {
+            font-size: 20px;
+            opacity: 0.8;
+            color: #333;
+        }
+
+        /* Flower Loader Container - Lowest Layer */
+        .loader-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            filter: blur(40px);
+            /* Gaussian blur applied only to the animation */
+        }
+
+        /* Flower Loader Styles */
+        .flower-loader {
+            overflow: hidden;
+            position: relative;
+            text-indent: -9999px;
+            display: inline-block;
+            width: 80px;
+            /* Increased from 48px to 80px */
+            height: 80px;
+            /* Increased from 48px to 80px */
+            background: rgb(59, 79, 207);
+            border-radius: 100%;
+            -moz-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                /* Adjusted shadow for larger size */
+                #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            -webkit-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            -moz-animation: flower-loader 20s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            /* Slower and more natural timing */
+            -webkit-animation: flower-loader 20s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            animation: flower-loader 20s infinite cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            -moz-transform-origin: 50% 50%;
+            -ms-transform-origin: 50% 50%;
+            -webkit-transform-origin: 50% 50%;
+            transform-origin: 50% 50%;
+        }
+
+        @-moz-keyframes flower-loader {
+            0% {
+                -moz-transform: rotate(0deg) scale(1);
+                transform: rotate(0deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            25% {
+                -moz-transform: rotate(540deg) scale(1.1);
+                transform: rotate(540deg) scale(1.1);
+                -moz-box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            50% {
+                -moz-transform: rotate(1080deg) scale(1);
+                transform: rotate(1080deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            75% {
+                -moz-transform: rotate(1620deg) scale(0.9);
+                transform: rotate(1620deg) scale(0.9);
+                -moz-box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            100% {
+                -moz-transform: rotate(2160deg) scale(1);
+                transform: rotate(2160deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+        }
+
+        @-webkit-keyframes flower-loader {
+            0% {
+                -webkit-transform: rotate(0deg) scale(1);
+                transform: rotate(0deg) scale(1);
+                -webkit-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            25% {
+                -webkit-transform: rotate(540deg) scale(1.1);
+                transform: rotate(540deg) scale(1.1);
+                -webkit-box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            50% {
+                -webkit-transform: rotate(1080deg) scale(1);
+                transform: rotate(1080deg) scale(1);
+                -webkit-box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            75% {
+                -webkit-transform: rotate(1620deg) scale(0.9);
+                transform: rotate(1620deg) scale(0.9);
+                -webkit-box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            100% {
+                -webkit-transform: rotate(2160deg) scale(1);
+                transform: rotate(2160deg) scale(1);
+                -webkit-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+        }
+
+        @keyframes flower-loader {
+            0% {
+                -moz-transform: rotate(0deg) scale(1);
+                -ms-transform: rotate(0deg) scale(1);
+                -webkit-transform: rotate(0deg) scale(1);
+                transform: rotate(0deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                -webkit-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            25% {
+                -moz-transform: rotate(540deg) scale(1.1);
+                -ms-transform: rotate(540deg) scale(1.1);
+                -webkit-transform: rotate(540deg) scale(1.1);
+                transform: rotate(540deg) scale(1.1);
+                -moz-box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 90px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            50% {
+                -moz-transform: rotate(1080deg) scale(1);
+                -ms-transform: rotate(1080deg) scale(1);
+                -webkit-transform: rotate(1080deg) scale(1);
+                transform: rotate(1080deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px,
+                    #485 -60px 60px 0 20px, #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 60px 60px 0 20px, #485 -60px 60px 0 20px,
+                    #485 -60px -60px 0 20px, #485 60px -60px 0 20px;
+            }
+
+            75% {
+                -moz-transform: rotate(1620deg) scale(0.9);
+                -ms-transform: rotate(1620deg) scale(0.9);
+                -webkit-transform: rotate(1620deg) scale(0.9);
+                transform: rotate(1620deg) scale(0.9);
+                -moz-box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 60px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+
+            100% {
+                -moz-transform: rotate(2160deg) scale(1);
+                -ms-transform: rotate(2160deg) scale(1);
+                -webkit-transform: rotate(2160deg) scale(1);
+                transform: rotate(2160deg) scale(1);
+                -moz-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                -webkit-box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px,
+                    #485 60px -60px 0 20px, #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+                box-shadow: white 0 0 75px 0, #485 -60px -60px 0 20px, #485 60px -60px 0 20px,
+                    #485 60px 60px 0 20px, #485 -60px 60px 0 20px;
+            }
+        }
+
+        /* --- Right Section (Form) --- */
+        .right-section {
+            flex: 1;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-section h2 {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .sub-text {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 100px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #536dfe;
+        }
+
+        .input-group input.error {
+            border-color: #ff4d4d;
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-container i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .forgot-pass {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 12px;
+            color: #536dfe;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            accent-color: #536dfe;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .checkbox-group a {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: #536dfe;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 100px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #3730a3;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .divider span {
+            padding: 0 10px;
+        }
+
+        .success-message {
+            display: none;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <!-- Flower Loader - Lowest Layer with Blur -->
+            <div class="loader-container">
+                <span class="flower-loader">Loading…</span>
+            </div>
+
+            <!-- Content on top -->
+            <div class="content-wrapper">
+                <h1>Speed up your work<br>with our Pathway App</h1>
+            </div>
+
+            <div class="partners-section">
+                <p>Used by</p>
+                <div class="partners-icons">
+                    <i class="fa-brands fa-google"></i>
+                    <i class="fa-brands fa-youtube"></i>
+                    <i class="fa-brands fa-google"></i>
+                    <i class="fa-brands fa-youtube"></i>
+                    <i class="fa-brands fa-google"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <h2>Get Started Now</h2>
+            <p class="sub-text">Please log in to your account to continue.</p>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your Name">
+                    <div class="error-message" id="nameError">Please enter your name</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" value="yourbusiness@mail.com"
+                        placeholder="yourbusiness@mail.com">
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <a href="#" class="forgot-pass" id="forgotPass">Forgot Password?</a>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="* * * * * * * *">
+                        <i class="fa-regular fa-eye" id="togglePassword"></i>
+                    </div>
+                    <div class="error-message" id="passwordError">Password must be at least 8 characters</div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" name="terms">
+                    <label for="terms">I agree to the <a href="#" id="termsLink">Terms & Privacy</a></label>
+                </div>
+
+                <button type="submit" class="login-btn">Log in</button>
+                <div class="success-message" id="successMessage">Login successful! Redirecting...</div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Password visibility toggle
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                // Toggle the eye icon
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+
+            // Form validation
+            const loginForm = document.getElementById('loginForm');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const termsCheckbox = document.getElementById('terms');
+            const successMessage = document.getElementById('successMessage');
+
+            loginForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                let isValid = true;
+
+                // Reset error states
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('input').forEach(el => el.classList.remove('error'));
+
+                // Validate name
+                if (nameInput.value.trim() === '') {
+                    nameInput.classList.add('error');
+                    document.getElementById('nameError').style.display = 'block';
+                    isValid = false;
+                }
+
+                // Validate email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailInput.value)) {
+                    emailInput.classList.add('error');
+                    document.getElementById('emailError').style.display = 'block';
+                    isValid = false;
+                }
+
+                // Validate password
+                if (passwordInput.value.length < 8) {
+                    passwordInput.classList.add('error');
+                    document.getElementById('passwordError').style.display = 'block';
+                    isValid = false;
+                }
+
+                // Validate terms checkbox
+                if (!termsCheckbox.checked) {
+                    termsCheckbox.classList.add('error');
+                    alert('Please agree to the Terms & Privacy');
+                    isValid = false;
+                }
+
+                // If all validations pass
+                if (isValid) {
+                    // Show success message
+                    successMessage.style.display = 'block';
+
+                    // In a real application, you would send the form data to a server
+                    console.log('Form submitted with data:', {
+                        name: nameInput.value,
+                        email: emailInput.value,
+                        password: passwordInput.value,
+                        terms: termsCheckbox.checked
+                    });
+
+                    // Simulate redirect after successful login
+                    setTimeout(() => {
+                        // In a real app, redirect to dashboard or home page
+                        console.log('Redirecting to dashboard...');
+                        // window.location.href = '/dashboard';
+                    }, 2000);
+                }
+            });
+
+            // Forgot password link
+            document.getElementById('forgotPass').addEventListener('click', function (e) {
+                e.preventDefault();
+                // In a real application, this would navigate to a password reset page
+                alert('Password reset functionality would be implemented here');
+            });
+
+            // Terms & Privacy link
+            document.getElementById('termsLink').addEventListener('click', function (e) {
+                e.preventDefault();
+                // In a real application, this would open the terms and privacy page
+                alert('Terms & Privacy page would open here');
+            });
+        });
+    </script>
+
+</body>
+
+</html>

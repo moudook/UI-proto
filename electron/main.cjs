@@ -12,10 +12,12 @@ try {
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+let mainWindow;
 let detachableWindow;
+let diffWindow;
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1024,
@@ -25,7 +27,8 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    titleBarStyle: 'default',
+    titleBarStyle: 'hidden',
+    frame: false,
     show: false,
     backgroundColor: '#F3F3F2',
   });
@@ -54,10 +57,15 @@ ipcMain.on('open-detachable-window', () => {
 
   detachableWindow = new BrowserWindow({
     width: 520,
-    height: 60,
+    height: 67,
     frame: false,
     transparent: true,
-    resizable: false,
+    resizable: true,
+    useContentSize: true,
+    minWidth: 520,
+    maxWidth: 520,
+    minHeight: 67,
+    maxHeight: 1200,
     alwaysOnTop: true,
     skipTaskbar: true,
     webPreferences: {
@@ -67,7 +75,7 @@ ipcMain.on('open-detachable-window', () => {
     }
   });
 
-  detachableWindow.loadFile('additional ui elements/detacheble-window.html');
+  detachableWindow.loadFile(path.join(__dirname, '../additional ui elements/detacheble-window.html'));
   detachableWindow.setOpacity(1.0);
 
   detachableWindow.on('closed', () => {
@@ -83,7 +91,131 @@ ipcMain.on('close-detachable-window', () => {
 
 ipcMain.on('resize-detachable-window', (event, { width, height }) => {
   if (detachableWindow) {
-    detachableWindow.setSize(width, height, true);
+    detachableWindow.setContentSize(width, height, true);
+  }
+});
+
+// Open diff window from detachable window
+ipcMain.on('open-diff-window', () => {
+  if (diffWindow) {
+    diffWindow.focus();
+    return;
+  }
+
+  diffWindow = new BrowserWindow({
+    width: 1050,
+    height: 650,
+    frame: false,
+    resizable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    transparent: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    }
+  });
+
+  diffWindow.loadFile(path.join(__dirname, '../additional ui elements/diff.html'));
+
+  diffWindow.on('closed', () => {
+    diffWindow = null;
+  });
+});
+
+ipcMain.on('close-diff-window', () => {
+  if (diffWindow) {
+    diffWindow.close();
+  }
+});
+
+ipcMain.on('minimize-diff-window', () => {
+  if (diffWindow) {
+    diffWindow.minimize();
+  }
+});
+
+ipcMain.on('maximize-diff-window', () => {
+  if (diffWindow) {
+    if (diffWindow.isMaximized()) {
+      diffWindow.unmaximize();
+    } else {
+      diffWindow.maximize();
+    }
+  }
+});
+
+ipcMain.on('diff-results', (event, results) => {
+  // Handle the results from the diff window
+  console.log('Diff results received:', results);
+  // You can forward these results to the main window or process them here
+});
+
+// End session: close detachable window and open diff window
+ipcMain.on('end-session-and-show-diff', () => {
+  // Close detachable window
+  if (detachableWindow) {
+    detachableWindow.close();
+    detachableWindow = null;
+  }
+
+  // Open diff window
+  if (diffWindow) {
+    diffWindow.focus();
+    return;
+  }
+
+  diffWindow = new BrowserWindow({
+    width: 1050,
+    height: 650,
+    frame: false,
+    resizable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    transparent: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    }
+  });
+
+  diffWindow.loadFile(path.join(__dirname, '../additional ui elements/diff.html'));
+
+  diffWindow.on('closed', () => {
+    diffWindow = null;
+  });
+});
+
+// Show main window (called from diff window after accept/reject)
+ipcMain.on('show-main-window', () => {
+  if (mainWindow) {
+    mainWindow.show();
+    mainWindow.focus();
+  }
+});
+
+// Main window controls
+ipcMain.on('minimize-main-window', () => {
+  if (mainWindow) {
+    mainWindow.minimize();
+  }
+});
+
+ipcMain.on('maximize-main-window', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  }
+});
+
+ipcMain.on('close-main-window', () => {
+  if (mainWindow) {
+    mainWindow.close();
   }
 });
 

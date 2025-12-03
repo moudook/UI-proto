@@ -1,580 +1,740 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- SECURITY: Content Security Policy (CSP) -->
-    <!-- This strictly limits what resources the browser can load. 
-         - default-src 'self': Only allow resources from the same origin.
-         - style-src 'unsafe-inline': Allows our CSS block (necessary for single-file).
-         - font-src: Allows Google Fonts.
-         - script-src 'unsafe-inline': Allows our JS block. 
-         In a production environment with separate files, remove 'unsafe-inline' for scripts. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
+    <title>Smart Resizable Diff Editor</title>
 
-    <title>Secure Diff Editor</title>
-    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            /* Golden Ratio & Accessibility Theme */
-            --phi: 1.618;
-            --base-size: 14px;
-            --line-height: 24px;
-            --border-radius: 10px;
-            
-            --bg-app: #F0F4F8;       
+            --bg-body: #F0F4F8;
             --bg-card: #FFFFFF;
-            
-            --text-primary: #102A43; 
-            --text-secondary: #627D98; 
-            
-            /* Color Blind Safe Colors */
-            --add-bg: #E6FFFA;       
-            --add-border: #319795;   
-            --add-text: #234E52;     
-            
-            --del-bg: #FFF5F5;       
-            --del-border: #D53F8C; 
-            --del-text: #702459;     
-            
-            --spacer-stripe: repeating-linear-gradient(
-                45deg,
-                #F7F9FC,
-                #F7F9FC 10px,
-                #EDF2F7 10px,
-                #EDF2F7 12px
-            );
+            --border-color: #CBD5E1;
+
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+
+            /* Diff Colors */
+            --del-bg: #FFF1F2;
+            --del-border: #F43F5E;
+            --del-text: #881337;
+
+            --add-bg: #ECFDF5;
+            --add-border: #10B981;
+            --add-text: #064E3B;
+
+            /* Accessible Button Colors */
+            --btn-accept: #2563EB;
+            /* Vibrant Blue */
+            --btn-reject: #475569;
+            /* Slate Gray */
         }
 
-        * { box-sizing: border-box; outline: none; }
+        * {
+            box-sizing: border-box;
+            outline: none;
+        }
 
         body {
             margin: 0;
-            padding: calc(20px * var(--phi));
+            padding: 0;
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-app);
+            background-color: transparent;
             height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Main Card Container --- */
+        .diff-card {
+            background: var(--bg-card);
+
+            /* SIZE LOGIC: */
+            width: 100%;
+            height: 100%;
+
+            /* 2. Don't get smaller than this */
+            min-height: 300px;
+            min-width: 500px;
+
+            /* 4. Allow user resizing */
+            resize: both;
+            overflow: hidden;
+            /* Necessary for resize handle */
+
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .card-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #F8FAFC;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            /* Prevents header from shrinking when scrolling */
+            -webkit-app-region: drag;
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Progress indicator */
+        .progress-indicator {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .progress-indicator .current {
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        .editor-card {
-            background: var(--bg-card);
-            border-radius: calc(var(--border-radius) * var(--phi));
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            width: 100%;
-            max-width: 1600px;
-            height: 90vh;
+        /* --- Window Controls --- */
+        .window-controls {
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #DAE1E7;
+            align-items: center;
+            gap: 8px;
         }
 
-        .split-view {
+        .window-control-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background-color: #E5E7EB;
+            color: #4B5563;
             display: flex;
-            flex-grow: 1;
-            height: 100%;
-            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            -webkit-app-region: no-drag;
+        }
+
+        .window-control-btn:hover {
+            background-color: #D1D5DB;
+        }
+
+        .window-control-btn.btn-close {
+            background-color: #FEE2E2;
+            color: #EF4444;
+        }
+
+        .window-control-btn.btn-close:hover {
+            background-color: #FECACA;
+            color: #DC2626;
+        }
+
+        .window-control-btn i {
+            font-size: 12px;
+        }
+
+        /* --- Editor Body (The scrollable area) --- */
+        .editor-body {
+            display: flex;
+            /* Flex: 1 makes it fill available vertical space */
+            flex: 1;
+            /* Min-height: 0 is crucial for nested flex scrolling to work */
+            min-height: 0;
+            position: relative;
+            background-color: #fff;
         }
 
         .pane {
             width: 50%;
+            height: 100%;
+            /* This enables the internal scroll if content exceeds container max-height */
             overflow-y: auto;
-            overflow-x: hidden;
-            padding-top: 20px;
-            padding-bottom: 20px;
-            /* Performance: Hardware acceleration for scrolling */
-            will-change: scroll-position;
-        }
-        
-        .pane.left { border-right: 1px solid #DAE1E7; }
-
-        .pane::-webkit-scrollbar { width: 12px; height: 12px; }
-        .pane::-webkit-scrollbar-track { background: transparent; }
-        .pane::-webkit-scrollbar-thumb { 
-            background: #BCCCDC; 
-            border: 3px solid transparent; 
-            background-clip: padding-box;
-            border-radius: 99px;
-        }
-        .pane::-webkit-scrollbar-thumb:hover { background-color: #829AB1; }
-
-        .code-container {
-            min-height: 100%;
-            outline: none;
-            counter-reset: line; 
+            /* Padding for bottom buttons */
+            padding-bottom: 80px;
+            padding-top: 10px;
         }
 
-        .diff-row {
+        .pane.left {
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* Scrollbar Styling */
+        .pane::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .pane::-webkit-scrollbar-thumb {
+            background: #CBD5E0;
+            border: 3px solid #fff;
+            border-radius: 10px;
+        }
+
+        /* --- Code Rows --- */
+        .code-row {
             display: flex;
-            width: 100%;
             font-family: 'JetBrains Mono', monospace;
-            font-size: var(--base-size);
-            line-height: var(--line-height);
-            position: relative;
+            font-size: 13px;
+            line-height: 24px;
+            min-height: 24px;
         }
 
-        .diff-row::before {
-            content: attr(data-line);
-            display: block;
-            width: 65px;
-            min-width: 65px;
+        .line-num {
+            width: 45px;
             text-align: right;
-            padding-right: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--text-secondary);
+            padding-right: 12px;
+            color: #94A3B8;
             user-select: none;
-            cursor: default;
-            opacity: 0.7;
+            font-size: 11px;
+            flex-shrink: 0;
         }
-
-        .diff-row.addition { background-color: var(--add-bg); }
-        .diff-row.addition .line-content { color: var(--add-text); font-weight: 500; }
-        .diff-row.addition::before {
-            content: "+ " attr(data-line);
-            color: var(--add-border);
-            font-weight: bold;
-            opacity: 1;
-        }
-        .diff-row.addition .line-content::after {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background-color: var(--add-border);
-        }
-
-        .diff-row.deletion { background-color: var(--del-bg); }
-        .diff-row.deletion .line-content { color: var(--del-text); }
-        .diff-row.deletion::before {
-            content: "- " attr(data-line);
-            color: var(--del-border);
-            font-weight: bold;
-            opacity: 1;
-        }
-        .diff-row.deletion .line-content::after {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background-color: var(--del-border);
-        }
-
-        .diff-row.spacer { background: var(--spacer-stripe); }
-        .diff-row.spacer::before { content: ""; }
 
         .line-content {
             flex-grow: 1;
-            padding-left: 10px; 
-            padding-right: 20px;
+            padding-left: 10px;
+            padding-right: 10px;
             white-space: pre-wrap;
-            word-break: break-all;
             color: var(--text-primary);
-            position: relative;
+            outline: none;
+            word-break: break-all;
+            /* Prevent horizontal overflow issues */
         }
-        
-        /* Security Warning UI */
-        #warning-toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #D53F8C;
+
+        .line-content:focus {
+            background-color: #F1F5F9;
+        }
+
+        /* Diff Styles */
+        .code-row.deletion {
+            background-color: var(--del-bg);
+        }
+
+        .code-row.deletion .line-content {
+            color: var(--del-text);
+        }
+
+        .code-row.deletion .line-content {
+            border-left: 3px solid var(--del-border);
+        }
+
+        .code-row.addition {
+            background-color: var(--add-bg);
+        }
+
+        .code-row.addition .line-content {
+            color: var(--add-text);
+        }
+
+        .code-row.addition .line-content {
+            border-left: 3px solid var(--add-border);
+        }
+
+        .code-row.spacer {
+            background: repeating-linear-gradient(45deg, #F8FAFC, #F8FAFC 10px, #F1F5F9 10px, #F1F5F9 20px);
+        }
+
+        /* --- Floating Buttons --- */
+        .floating-actions {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            /* Ensures visibility over text */
+            pointer-events: none;
+            /* Allows clicking through the gap between buttons */
+        }
+
+        .action-btn {
+            pointer-events: auto;
+            /* Re-enable clicks on buttons */
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
             color: white;
-            padding: 10px 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Blue for Accept */
+        .btn-accept {
+            background-color: var(--btn-accept);
+        }
+
+        /* Grey for Reject */
+        .btn-reject {
+            background-color: var(--btn-reject);
+        }
+
+        /* --- Loading State --- */
+        .loading-overlay {
+            position: absolute;
+            top: 45px;
+            /* Below header */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            /* Below buttons (100) but above text */
+            color: var(--text-secondary);
+        }
+
+        /* YouTube-style loading animation */
+        .youtube-loader {
+            position: relative;
+            width: 80%;
+            height: 4px;
+            background-color: rgba(255, 0, 0, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .youtube-loader::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 30%;
+            background-color: #ff0000;
+            border-radius: 2px;
+            animation: youtube-loading 1.5s infinite ease-in-out;
+        }
+
+        @keyframes youtube-loading {
+            0% {
+                left: -30%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* Error Overlay (replaces loader on failure) */
+        .error-overlay {
+            position: absolute;
+            top: 45px;
+            /* Below header */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 60;
+            color: #7f1d1d;
+            pointer-events: auto;
+        }
+
+        .error-overlay .msg {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #7f1d1d;
+            padding: 18px 24px;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            max-width: 520px;
+        }
+
+        .error-overlay button.retry {
+            margin-top: 12px;
+            background: #ef4444;
+            color: white;
+            padding: 8px 14px;
             border-radius: 8px;
-            font-size: 0.9rem;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
         }
     </style>
 </head>
+
 <body>
 
-    <div class="editor-card">
-        <div class="split-view">
-            <!-- Left Pane -->
-            <div class="pane left" id="leftPane">
-                <!-- spellcheck="false" improves performance and reduces DOM interference -->
-                <div id="leftContent" class="code-container" contenteditable="true" spellcheck="false"></div>
+    <div class="diff-card" id="mainCard">
+        <!-- Header -->
+        <div class="card-header">
+            <span class="header-title" id="fileName">Review Changes</span>
+            <div class="progress-indicator" style="-webkit-app-region: no-drag;">
+                <span>Change</span>
+                <span class="current" id="currentPair">1</span>
+                <span>of</span>
+                <span id="totalPairs">1</span>
             </div>
 
-            <!-- Right Pane -->
-            <div class="pane right" id="rightPane">
-                <div id="rightContent" class="code-container" contenteditable="true" spellcheck="false"></div>
+            <!-- Window Controls -->
+            <div class="window-controls">
+                <button id="minimizeBtn" class="window-control-btn" title="Minimize"><i
+                        class="fa-solid fa-minus"></i></button>
+                <button id="maximizeBtn" class="window-control-btn" title="Maximize"><i
+                        class="fa-regular fa-square"></i></button>
+                <button id="closeBtn" class="window-control-btn btn-close" title="Close"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loading-overlay">
+            <div class="youtube-loader"></div>
+        </div>
+
+        <!-- Error overlay (initially hidden) -->
+        <div id="errorOverlay" class="error-overlay" style="display:none;">
+            <div class="msg">
+                <div id="errorMessage" style="font-size:14px; font-weight:600;">Unable to connect to the API.</div>
+                <div style="font-size:12px; color:#9CA3AF; margin-top:6px;">Please check your connection or try again.
+                </div>
+                <button class="retry" id="retryBtn">Try Again</button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="editor-body">
+            <div class="pane left" id="leftPane"></div>
+            <div class="pane right" id="rightPane"></div>
+        </div>
+
+        <!-- Buttons (Always Visible) -->
+        <div class="floating-actions" style="-webkit-app-region: no-drag;">
+            <!-- Reject (Grey) -->
+            <button class="action-btn btn-reject" onclick="handleAction('reject')" aria-label="Reject">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <!-- Accept (Blue) -->
+            <button class="action-btn btn-accept" onclick="handleAction('accept')" aria-label="Accept">
+                <i class="fa-solid fa-check"></i>
+            </button>
+        </div>
     </div>
-    
-    <div id="warning-toast">Input too large: Truncated to 2000 lines for performance.</div>
 
     <script>
-        // --- Security Configuration ---
-        const MAX_LINES = 2000; // Prevent Browser Crash (DoS Protection)
-        const DEBOUNCE_MS = 50; // Prevent high CPU usage on fast typing
-
-        // --- Initial State ---
-        const initialOriginal = [
-            "function secureTransaction(amount) {",
-            "  if (amount <= 0) {",
-            "    return false;",
-            "  }",
-            "  // Process payment",
-            "  return true;",
-            "}"
-        ];
-
-        const initialNew = [
-            "function secureTransaction(amount, currency) {",
-            "  // Added currency validation logic",
-            "  if (amount <= 0 || !isValid(currency)) {",
-            "    throw new Error('Invalid Input');",
-            "  }",
-            "  processPayment(amount, currency);",
-            "  return true;",
-            "}"
-        ];
-
-        let state = {
-            leftLines: [...initialOriginal],
-            rightLines: [...initialNew]
-        };
-
-        const leftContainer = document.getElementById('leftContent');
-        const rightContainer = document.getElementById('rightContent');
         const leftPane = document.getElementById('leftPane');
         const rightPane = document.getElementById('rightPane');
-        const warningToast = document.getElementById('warning-toast');
+        const loader = document.getElementById('loader');
+        const errorOverlay = document.getElementById('errorOverlay');
+        const retryBtn = document.getElementById('retryBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const fileNameEl = document.getElementById('fileName');
+        const currentPairEl = document.getElementById('currentPair');
+        const totalPairsEl = document.getElementById('totalPairs');
 
-        // --- Logic: LCS Algorithm (Performance Critical) ---
-        function computeLCS(left, right) {
-            // Guard clause for performance
-            if (left.length > MAX_LINES || right.length > MAX_LINES) return null;
+        // Window control buttons
+        const minimizeBtn = document.getElementById('minimizeBtn');
+        const maximizeBtn = document.getElementById('maximizeBtn');
+        const closeBtn = document.getElementById('closeBtn');
 
-            const m = left.length;
-            const n = right.length;
-            
-            // Performance: Use Int32Array for better memory management on large diffs
-            // (Note: For very large arrays, we would switch to a flat array, 
-            // but standard arrays are fine for < 2000 lines)
-            const C = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+        // State for multiple diff pairs
+        let diffPairs = [];
+        let currentPairIndex = 0;
+        let results = []; // Store accept/reject results
 
-            for (let i = 1; i <= m; i++) {
-                for (let j = 1; j <= n; j++) {
-                    if (left[i - 1] === right[j - 1]) {
-                        C[i][j] = C[i - 1][j - 1] + 1;
-                    } else {
-                        C[i][j] = Math.max(C[i][j - 1], C[i - 1][j]);
-                    }
+        // Current pair content
+        let leftText = "";
+        let rightText = "";
+
+        // --- 2. LCS Diff Algorithm ---
+        function computeDiff(original, modified) {
+            const lines1 = original.split('\n');
+            const lines2 = modified.split('\n');
+            const n = lines1.length, m = lines2.length;
+            const dp = Array(n + 1).fill(0).map(() => Array(m + 1).fill(0));
+
+            for (let i = 1; i <= n; i++) {
+                for (let j = 1; j <= m; j++) {
+                    if (lines1[i - 1] === lines2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+                    else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
                 }
             }
-            return C;
-        }
 
-        function getAlignedRows(left, right) {
-            // Security: limit processing
-            if (left.length > MAX_LINES || right.length > MAX_LINES) {
-                showWarning();
-                return { 
-                    alignedLeft: left.slice(0, MAX_LINES).map((l, i) => ({ type: 'content', line: l, index: i })), 
-                    alignedRight: right.slice(0, MAX_LINES).map((l, i) => ({ type: 'content', line: l, index: i }))
-                };
-            }
-
-            const C = computeLCS(left, right);
-            let i = left.length;
-            let j = right.length;
-            
-            const alignedLeft = [];
-            const alignedRight = [];
+            let i = n, j = m;
+            const leftRes = [], rightRes = [];
 
             while (i > 0 || j > 0) {
-                if (i > 0 && j > 0 && left[i - 1] === right[j - 1]) {
-                    alignedLeft.unshift({ type: 'content', line: left[i - 1], index: i - 1 });
-                    alignedRight.unshift({ type: 'content', line: right[j - 1], index: j - 1 });
+                if (i > 0 && j > 0 && lines1[i - 1] === lines2[j - 1]) {
+                    leftRes.unshift({ type: 'normal', content: lines1[i - 1], lineNum: i });
+                    rightRes.unshift({ type: 'normal', content: lines2[j - 1], lineNum: j });
                     i--; j--;
-                } else if (j > 0 && (i === 0 || C[i][j - 1] >= C[i - 1][j])) {
-                    alignedLeft.unshift({ type: 'spacer', line: '', index: -1 });
-                    alignedRight.unshift({ type: 'addition', line: right[j - 1], index: j - 1 });
+                } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                    leftRes.unshift({ type: 'spacer', content: '', lineNum: '' });
+                    rightRes.unshift({ type: 'addition', content: lines2[j - 1], lineNum: j });
                     j--;
                 } else {
-                    alignedLeft.unshift({ type: 'deletion', line: left[i - 1], index: i - 1 });
-                    alignedRight.unshift({ type: 'spacer', line: '', index: -1 });
+                    leftRes.unshift({ type: 'deletion', content: lines1[i - 1], lineNum: i });
+                    rightRes.unshift({ type: 'spacer', content: '', lineNum: '' });
                     i--;
                 }
             }
-            return { alignedLeft, alignedRight };
+            return { left: leftRes, right: rightRes };
         }
 
-        // --- DOM Creation (XSS Protected) ---
-        function createRowHTML(item, side) {
-            const div = document.createElement('div');
-            
-            let classes = ['diff-row'];
-            if (item.type === 'deletion') classes.push('deletion');
-            if (item.type === 'addition') classes.push('addition');
-            if (item.type === 'spacer') classes.push('spacer');
-            div.className = classes.join(' ');
-            
-            if (item.type !== 'spacer') {
-                div.setAttribute('data-line', item.index + 1);
-            } else {
-                div.setAttribute('data-line', '');
-                div.contentEditable = "false";
-            }
+        // --- 3. Render Logic ---
+        function renderRow(item) {
+            const row = document.createElement('div');
+            row.className = `code-row ${item.type}`;
 
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'line-content';
-            
-            // SECURITY: Use textContent NOT innerHTML. 
-            // This prevents XSS if the string contains <script> tags.
-            contentDiv.textContent = item.line;
-            
-            contentDiv.dataset.side = side;
-            
-            if (item.type !== 'spacer') {
-                contentDiv.dataset.index = item.index;
-            }
-            
-            div.appendChild(contentDiv);
-            return div;
+            const num = document.createElement('div');
+            num.className = 'line-num';
+            num.textContent = item.lineNum;
+
+            const content = document.createElement('div');
+            content.className = 'line-content';
+            content.contentEditable = item.type !== 'spacer';
+            content.spellcheck = false;
+            content.innerText = item.content;
+
+            content.addEventListener('input', debounce(updateData, 500));
+
+            row.appendChild(num);
+            row.appendChild(content);
+            return row;
         }
 
         function render() {
-            const cursor = saveCursor();
-            const { alignedLeft, alignedRight } = getAlignedRows(state.leftLines, state.rightLines);
+            const scrollTop = leftPane.scrollTop; // Save scroll position
+            const { left, right } = computeDiff(leftText, rightText);
 
-            // Performance: Using a DocumentFragment reduces reflows
-            const fragmentLeft = document.createDocumentFragment();
-            const fragmentRight = document.createDocumentFragment();
+            leftPane.innerHTML = '';
+            rightPane.innerHTML = '';
 
-            for (let k = 0; k < alignedLeft.length; k++) {
-                fragmentLeft.appendChild(createRowHTML(alignedLeft[k], 'left'));
-                fragmentRight.appendChild(createRowHTML(alignedRight[k], 'right'));
-            }
+            left.forEach(item => leftPane.appendChild(renderRow(item)));
+            right.forEach(item => rightPane.appendChild(renderRow(item)));
 
-            leftContainer.innerHTML = '';
-            rightContainer.innerHTML = '';
-            
-            leftContainer.appendChild(fragmentLeft);
-            rightContainer.appendChild(fragmentRight);
-
-            restoreCursor(cursor);
+            // Restore scroll position
+            leftPane.scrollTop = scrollTop;
+            rightPane.scrollTop = scrollTop;
         }
 
-        // --- Logic: Debounce (Performance) ---
+        // --- 4. Handlers ---
+        function updateData() {
+            const extract = (pane) => {
+                return Array.from(pane.querySelectorAll('.code-row'))
+                    .filter(r => !r.classList.contains('spacer'))
+                    .map(r => r.querySelector('.line-content').innerText)
+                    .join('\n');
+            };
+            leftText = extract(leftPane);
+            rightText = extract(rightPane);
+            render();
+        }
+
         function debounce(func, wait) {
             let timeout;
-            return function(...args) {
+            return function (...args) {
                 clearTimeout(timeout);
                 timeout = setTimeout(() => func.apply(this, args), wait);
             };
         }
 
-        const debouncedRender = debounce(() => {
-            render();
-        }, DEBOUNCE_MS);
+        function handleAction(type) {
+            const card = document.getElementById('mainCard');
+            // Flash color based on action
+            const color = type === 'accept' ? 'rgba(37, 99, 235, 0.4)' : 'rgba(71, 85, 105, 0.4)';
 
-        // --- Cursor Handling ---
-        function saveCursor() {
-            const sel = window.getSelection();
-            if (!sel.rangeCount) return null;
-            const range = sel.getRangeAt(0);
-            
-            let node = range.startContainer;
-            while (node && (!node.classList || !node.classList.contains('line-content'))) {
-                node = node.parentNode;
-                if(!node || node === document.body) break;
-            }
+            card.style.transition = "box-shadow 0.2s";
+            card.style.boxShadow = `0 0 0 5px ${color}`;
 
-            if (!node || !node.dataset || node.contentEditable === "false") return null;
+            // Store the result
+            results.push({
+                index: currentPairIndex,
+                action: type,
+                pair: diffPairs[currentPairIndex]
+            });
 
-            return {
-                side: node.dataset.side,
-                index: parseInt(node.dataset.index),
-                offset: sel.getRangeAt(0).startOffset
-            };
-        }
+            setTimeout(() => {
+                card.style.boxShadow = "0 25px 50px -12px rgba(0, 0, 0, 0.25)";
+                console.log(`User clicked: ${type} for pair ${currentPairIndex + 1}`);
 
-        function restoreCursor(saved) {
-            if (!saved) return;
-            const container = saved.side === 'left' ? leftContainer : rightContainer;
-            const contentDivs = container.querySelectorAll('.line-content');
-            let targetDiv = null;
-            
-            for (let div of contentDivs) {
-                if (parseInt(div.dataset.index) === saved.index) {
-                    targetDiv = div;
-                    break;
-                }
-            }
-
-            if (targetDiv) {
-                targetDiv.focus(); 
-                const sel = window.getSelection();
-                const range = document.createRange();
-                
-                if (targetDiv.firstChild) {
-                    const len = targetDiv.firstChild.length;
-                    range.setStart(targetDiv.firstChild, Math.min(saved.offset, len));
-                    range.setEnd(targetDiv.firstChild, Math.min(saved.offset, len));
+                // Move to next pair or close if done
+                if (currentPairIndex < diffPairs.length - 1) {
+                    currentPairIndex++;
+                    loadCurrentPair();
                 } else {
-                    range.setStart(targetDiv, 0);
-                    range.setEnd(targetDiv, 0);
+                    // All pairs processed - send results and close
+                    finishAndClose();
                 }
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                container.focus();
-            }
+            }, 300);
         }
 
-        function showWarning() {
-            warningToast.style.display = 'block';
-            setTimeout(() => warningToast.style.display = 'none', 3000);
+        function loadCurrentPair() {
+            if (diffPairs.length === 0) return;
+
+            const pair = diffPairs[currentPairIndex];
+            leftText = pair.left || pair.leftText || pair.original || '';
+            rightText = pair.right || pair.rightText || pair.modified || '';
+
+            // Update header
+            fileNameEl.textContent = pair.fileName || pair.file || `Change ${currentPairIndex + 1}`;
+            currentPairEl.textContent = currentPairIndex + 1;
+            totalPairsEl.textContent = diffPairs.length;
+
+            render();
         }
 
-        // --- Event Listeners ---
-
-        function handleInput(e, side) {
-            // 1. Structural Wipe Recovery (Select All + Delete)
-            const container = side === 'left' ? leftContainer : rightContainer;
-            if (container.querySelectorAll('.diff-row').length === 0 || e.target === container) {
-                const newText = container.innerText; 
-                const newLines = newText.split(/\r?\n/);
-                
-                // Truncate if too long (DoS prevention)
-                if(newLines.length > MAX_LINES) {
-                    newLines.length = MAX_LINES;
-                    showWarning();
-                }
-
-                if (side === 'left') state.leftLines = newLines;
-                else state.rightLines = newLines;
-                
-                render(); 
-                return;
+        function finishAndClose() {
+            // Send results back to main process
+            if (window.electronAPI) {
+                window.electronAPI.send('diff-results', results);
+                window.electronAPI.send('show-main-window');
+                window.electronAPI.send('close-diff-window');
             }
-
-            // 2. Standard Input (Text update)
-            if (e.target.classList.contains('line-content')) {
-                const index = parseInt(e.target.dataset.index);
-                const lines = side === 'left' ? state.leftLines : state.rightLines;
-                
-                // Using textContent is safe
-                lines[index] = e.target.textContent;
-                
-                // Use debounced render to save CPU
-                debouncedRender();
-            }
+            console.log('All pairs processed:', results);
         }
 
-        function handleKeydown(e, side) {
-            const target = e.target;
-            if (!target.classList.contains('line-content')) return;
+        // --- 5. Sync Scroll ---
+        // We use a flag to prevent infinite loop of scroll events
+        let isSyncingLeft = false;
+        let isSyncingRight = false;
 
-            const index = parseInt(target.dataset.index);
-            const lines = side === 'left' ? state.leftLines : state.rightLines;
-
-            // ENTER: New Line
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const cursor = window.getSelection().getRangeAt(0).startOffset;
-                const currentLine = lines[index];
-                
-                const part1 = currentLine.slice(0, cursor);
-                const part2 = currentLine.slice(cursor);
-
-                // Prevent creating lines beyond max limit
-                if (lines.length >= MAX_LINES) {
-                    showWarning();
-                    return;
-                }
-
-                lines[index] = part1;
-                lines.splice(index + 1, 0, part2);
-                
-                render(); // Immediate render needed for cursor placement
-                restoreCursor({ side, index: index + 1, offset: 0 });
-            }
-
-            // BACKSPACE: Merge Lines
-            if (e.key === 'Backspace') {
-                const cursor = window.getSelection().getRangeAt(0).startOffset;
-                if (cursor === 0 && index > 0) {
-                    e.preventDefault();
-                    const prevLen = lines[index - 1].length;
-                    lines[index - 1] += lines[index];
-                    lines.splice(index, 1);
-                    render(); // Immediate render needed
-                    restoreCursor({ side, index: index - 1, offset: prevLen });
-                }
-            }
-        }
-
-        // --- Security: Paste Sanitizer ---
-        // Prevents Rich Text / HTML injection via Copy Paste
-        function handlePaste(e, side) {
-            e.preventDefault();
-            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-            
-            // Insert text at cursor position manually
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            
-            // Sanitize: We only allow the raw text, browser removes HTML tags due to preventDefault
-            document.execCommand("insertText", false, text);
-            
-            // Trigger input logic
-            handleInput({ target: selection.anchorNode.parentNode }, side);
-        }
-
-        ['input', 'keydown', 'paste'].forEach(evt => {
-            leftContainer.addEventListener(evt, (e) => {
-                if(evt === 'input') handleInput(e, 'left');
-                if(evt === 'keydown') handleKeydown(e, 'left');
-                if(evt === 'paste') handlePaste(e, 'left');
-            });
-            rightContainer.addEventListener(evt, (e) => {
-                if(evt === 'input') handleInput(e, 'right');
-                if(evt === 'keydown') handleKeydown(e, 'right');
-                if(evt === 'paste') handlePaste(e, 'right');
-            });
-        });
-
-        // Sync Scrolling
-        let isSyncingLeft = false, isSyncingRight = false;
-        leftPane.addEventListener('scroll', function() {
+        leftPane.addEventListener('scroll', function () {
             if (!isSyncingLeft) {
                 isSyncingRight = true;
                 rightPane.scrollTop = this.scrollTop;
-                rightPane.scrollLeft = this.scrollLeft;
             }
             isSyncingLeft = false;
-        }, { passive: true }); // Passive listener for scrolling performance
+        });
 
-        rightPane.addEventListener('scroll', function() {
+        rightPane.addEventListener('scroll', function () {
             if (!isSyncingRight) {
                 isSyncingLeft = true;
                 leftPane.scrollTop = this.scrollTop;
-                leftPane.scrollLeft = this.scrollLeft;
             }
             isSyncingRight = false;
-        }, { passive: true });
+        });
 
-        // Initial Render
-        render();
+        // --- New: API fetch logic with 10s timeout and error handling ---
+        async function fetchDiffData() {
+            loader.style.display = 'flex';
+            errorOverlay.style.display = 'none';
+            leftPane.innerHTML = rightPane.innerHTML = '';
+
+            const timeoutMs = 10000; // 10s
+            let didTimeout = false;
+
+            // Prefer electronIPC if available, otherwise use fetch
+            try {
+                let timer;
+                const abortController = new AbortController();
+
+                // In case native fetch is used, abort after timeout
+                timer = setTimeout(() => {
+                    didTimeout = true;
+                    abortController.abort();
+                }, timeoutMs);
+
+                let result;
+                if (window.electronAPI && typeof window.electronAPI.invoke === 'function') {
+                    // Provide a Promise-based timeout wrapper for the electron invoke
+                    result = await Promise.race([
+                        window.electronAPI.invoke('get-diff-pairs'),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeoutMs))
+                    ]);
+                } else {
+                    const res = await fetch('/api/diff', { signal: abortController.signal });
+                    if (!res.ok) throw new Error(`Fetch error: ${res.statusText}`);
+                    result = await res.json();
+                }
+
+                if (!result) throw new Error('Empty response');
+
+                // Handle multiple pairs or single pair
+                if (Array.isArray(result)) {
+                    diffPairs = result;
+                } else if (result.pairs && Array.isArray(result.pairs)) {
+                    diffPairs = result.pairs;
+                } else {
+                    // Single pair - wrap in array
+                    diffPairs = [{
+                        left: result.left || result.leftText || result.leftContent || '',
+                        right: result.right || result.rightText || result.rightContent || '',
+                        fileName: result.fileName || result.file || 'review_changes.js'
+                    }];
+                }
+
+                // Reset state
+                currentPairIndex = 0;
+                results = [];
+
+                // Load first pair
+                loadCurrentPair();
+
+            } catch (err) {
+                console.error('Error fetching diff data:', err);
+                if (didTimeout || err.name === 'AbortError' || err.message === 'Timeout') {
+                    showError("Request timed out after 10 seconds.");
+                } else {
+                    showError("Unable to connect to the API.");
+                }
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorOverlay.style.display = 'flex';
+        }
+
+        retryBtn.addEventListener('click', () => {
+            fetchDiffData();
+        });
+
+        // --- 6. Init ---
+        function init() {
+            if (window.electronAPI) {
+                minimizeBtn.addEventListener('click', () => window.electronAPI.send('minimize-diff-window'));
+                maximizeBtn.addEventListener('click', () => window.electronAPI.send('maximize-diff-window'));
+                closeBtn.addEventListener('click', () => window.electronAPI.send('close-diff-window'));
+            }
+
+            // Start loader and attempt to fetch data; if unreachable, show error after 10s
+            fetchDiffData();
+        }
+
+        init();
 
     </script>
 </body>
+
 </html>

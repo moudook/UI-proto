@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   send: (channel, data) => ipcRenderer.send(channel, data),
+  invoke: (channel, data) => ipcRenderer.invoke(channel, data),
   // Add any IPC methods you need here
   // Example:
   // sendMessage: (channel, data) => ipcRenderer.send(channel, data),

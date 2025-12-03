@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Badges with Fill Toggle</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 20px;
+        }
+
+        .instructions {
+            margin-bottom: 40px;
+            color: #666;
+            font-size: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* --- Container for Horizontal Layout --- */
+        .container {
+            display: flex;
+            flex-direction: row;
+            /* Horizontal alignment */
+            flex-wrap: wrap;
+            /* WRAP to next line if space runs out */
+            gap: 12px;
+            /* Space between buttons */
+            justify-content: center;
+
+            /* 
+               LIMIT: Controls max items per line indirectly. 
+               Reduce this width to force wrapping sooner.
+            */
+            max-width: 600px;
+        }
+
+        /* --- Base Badge Styles --- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            width: fit-content;
+            /* Auto-adjust width */
+
+            border-radius: 9999px;
+            border-width: 1.5px;
+            /* Slightly thinner for horizontal cluster */
+            border-style: solid;
+
+            font-size: 16px;
+            /* Slightly smaller for density */
+            font-weight: 500;
+            white-space: nowrap;
+
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.5),
+                0 2px 3px rgba(0, 0, 0, 0.05);
+
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+
+        .badge:active {
+            transform: scale(0.95);
+        }
+
+        /* Icon Styling */
+        .badge svg {
+            width: 18px;
+            height: 18px;
+            /* Default: Outline Style */
+            stroke-width: 2.2;
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        /* --- FILLED STATE OVERRIDE --- */
+        /* When the badge has class 'is-filled', change SVG behavior */
+        .badge.is-filled svg {
+            fill: currentColor;
+            /* Fill with the text color */
+            stroke: none;
+            /* Remove outline stroke */
+        }
+
+        /* --- Color Definitions --- */
+
+        /* 1. Yellow */
+        .badge.yellow {
+            color: #c27803;
+            border-color: #f6c075;
+            background-image: linear-gradient(180deg, #fef0c7 0%, #fcdfaa 100%);
+        }
+
+        /* 2. Blue */
+        .badge.blue {
+            color: #2b65d9;
+            border-color: #9cb6f5;
+            background-image: linear-gradient(180deg, #e3efff 0%, #c9dfff 100%);
+        }
+
+        /* 3. Green */
+        .badge.green {
+            color: #2da44e;
+            border-color: #8edc9f;
+            background-image: linear-gradient(180deg, #e6ffec 0%, #c1f0c9 100%);
+        }
+
+        /* 4. Red */
+        .badge.red {
+            color: #cd2e3d;
+            border-color: #fca5a5;
+            background-image: linear-gradient(180deg, #ffeef0 0%, #fecdd3 100%);
+        }
+
+        /* 5. Gray */
+        .badge.gray {
+            color: #1f2937;
+            border-color: #b5b5b5;
+            background-image: linear-gradient(180deg, #e5e5e5 0%, #cfcfcf 100%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="instructions">Please select your preference</div>
+
+    <div class="container">
+        <!-- Your custom named buttons -->
+
+        <div class="badge yellow" onclick="toggleFill(this, 'yellow')">
+            <svg viewBox="0 0 24 24"><!-- Content injected by JS --></svg>
+            <span>B2B</span>
+        </div>
+
+        <div class="badge blue" onclick="toggleFill(this, 'blue')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>B2C</span>
+        </div>
+
+        <div class="badge green" onclick="toggleFill(this, 'green')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>D2C</span>
+        </div>
+
+        <div class="badge red" onclick="toggleFill(this, 'red')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>marketplace</span>
+        </div>
+
+        <div class="badge gray" onclick="toggleFill(this, 'gray')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>SaaS</span>
+        </div>
+
+        <div class="badge green" onclick="toggleFill(this, 'green')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>infra</span>
+        </div>
+
+        <div class="badge yellow" onclick="toggleFill(this, 'yellow')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>deep-tech</span>
+        </div>
+
+        <div class="badge blue" onclick="toggleFill(this, 'blue')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>fintech rails</span>
+        </div>
+
+        <div class="badge red" onclick="toggleFill(this, 'red')">
+            <svg viewBox="0 0 24 24"></svg>
+            <span>dev-tools</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Database of Icon Paths (Outline vs Filled)
+        const icons = {
+            yellow: {
+                // Circle with line and dot
+                outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+                // Solid circle with transparent exclamation
+                filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+            },
+            blue: {
+                // Circle with arrow up
+                outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+                // Solid circle with transparent arrow
+                filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+            },
+            green: {
+                // Circle with check
+                outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+                // Solid circle with transparent check
+                filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+            },
+            red: {
+                // Circle with X
+                outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+                // Solid circle with transparent X
+                filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+            },
+            gray: {
+                // Circle with clock hands
+                outline: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="8"></line><polyline points="9 11 12 8 15 11"></polyline>',
+                // Solid circle with transparent clock hands
+                filled: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>'
+            }
+        };
+
+        // Initialize buttons (draw outline icons on load)
+        document.querySelectorAll('.badge').forEach(badge => {
+            // Find which type it is based on class
+            let type = '';
+            if (badge.classList.contains('yellow')) type = 'yellow';
+            else if (badge.classList.contains('blue')) type = 'blue';
+            else if (badge.classList.contains('green')) type = 'green';
+            else if (badge.classList.contains('red')) type = 'red';
+            else if (badge.classList.contains('gray')) type = 'gray';
+
+            if (type && icons[type]) {
+                badge.querySelector('svg').innerHTML = icons[type].outline;
+            }
+        });
+
+        // The Click Function
+        function toggleFill(element, type) {
+            const svg = element.querySelector('svg');
+
+            // Check if currently filled
+            const isFilled = element.classList.contains('is-filled');
+
+            if (isFilled) {
+                // Switch back to Outline
+                element.classList.remove('is-filled');
+                svg.innerHTML = icons[type].outline;
+            } else {
+                // Switch to Filled
+                element.classList.add('is-filled');
+                svg.innerHTML = icons[type].filled;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
